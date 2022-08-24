@@ -35,7 +35,6 @@ type S3PackagePath struct {
 	IsLastStage bool
 }
 
-
 func ConnectToK8s() *kubernetes.Clientset {
 	var kubeconfig string
 
@@ -47,14 +46,14 @@ func ConnectToK8s() *kubernetes.Clientset {
 		}
 		config, err = clientcmd.BuildConfigFromFlags("", kubeconfig)
 		if err != nil {
-			logger.Zaplog.Error("The kubeconfig cannot be loaded", zap.String("err", err.Error()))
+			logger.Error("The kubeconfig cannot be loaded", zap.String("err", err.Error()))
 			os.Exit(1)
 		}
 	}
 
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
-		logger.Zaplog.Error("Failed to create K8s clientset")
+		logger.Error("Failed to create K8s clientset")
 		os.Exit(1)
 	}
 
@@ -74,6 +73,9 @@ func LaunchK8sJob(clientset *kubernetes.Clientset, namespace string, config *sce
 	// Fill pod env vars with scenario parameters
 	for key, value := range ScenarioParameters {
 		podEnv = append(podEnv, v1.EnvVar{Name: key, Value: value})
+	}
+	if s3path.StageNum == 0 {
+		podEnv = append(podEnv, v1.EnvVar{Name: "s3path", Value: s3path.Path})
 	}
 	if s3path.StageNum > 0 {
 		split := strings.Split(s3path.Path, ".tgz")
@@ -100,11 +102,11 @@ func LaunchK8sJob(clientset *kubernetes.Clientset, namespace string, config *sce
 
 	_, err := jobs.Create(context.TODO(), jobSpec, metav1.CreateOptions{})
 	if err != nil {
-		logger.Zaplog.Fatal("Failed to create K8s job.", zap.String("error", err.Error()))
+		logger.Fatal("Failed to create K8s job.", zap.String("error", err.Error()))
 	}
 
 	//print job details
-	logger.Zaplog.Info("Created K8s job successfully", zap.String("JobName", config.ModuleName))
+	logger.Info("Created K8s job successfully", zap.String("JobName", config.ModuleName))
 }
 
 func GetJobStatus(clientset *kubernetes.Clientset, jobName string, jobNamespace string) (JobStatus, error) {
@@ -118,12 +120,12 @@ func GetJobStatus(clientset *kubernetes.Clientset, jobName string, jobNamespace 
 	}
 
 	if job.Status.Succeeded > 0 {
-		logger.Zaplog.Info("Job ran successfully", zap.String("JobName", jobName))
+		logger.Info("Job ran successfully", zap.String("JobName", jobName))
 		return Succeeded, nil // Job ran successfully
 	}
 
 	if job.Status.Failed > 0 {
-		logger.Zaplog.Error("Job ran failed", zap.String("JobName", jobName))
+		logger.Error("Job ran failed", zap.String("JobName", jobName))
 		return Failed, nil // Job ran successfully
 	}
 

@@ -54,12 +54,12 @@ func ReadConfigJSON(filename string) []CascadeScenarios {
 	var Config fullscenario
 	jsonFile, err := os.ReadFile(filename)
 	if err != nil {
-		logger.Zaplog.Error("Cant read config file")
+		logger.Error("Cant read config file")
 		os.Exit(1)
 	}
 	err = json.Unmarshal(jsonFile, &Config)
 	if err != nil {
-		logger.Zaplog.Error("YAML unmarshal failed")
+		logger.Error("YAML unmarshal failed")
 		os.Exit(1)
 	}
 	return Config.Cascademodules
