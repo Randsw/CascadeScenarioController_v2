@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"os"
+	"os/signal"
+    "syscall"
 
 	//"strings"
 	"encoding/json"
@@ -41,6 +43,8 @@ func main() {
 	//configFilename := "/tmp/configuration"
 
 	configFilename := "cascadescenario/test/test_success.json"
+	
+	//configFilename := "cascadescenario/test/test_fail_first.json"
 
 	CascadeScenatioConfig := scenarioconfig.ReadConfigJSON(configFilename)
 	//Get pod namespace
@@ -63,11 +67,10 @@ func main() {
 	if envvar := os.Getenv("BROCKER_ADDRESS"); len(envvar) > 0 {
 		brockerAddress = envvar
 	}
-
 	//Get Topic name
 	topic := "source"
-	if envvar := os.Getenv("BROCKER_ADDRESS"); len(envvar) > 0 {
-		brockerAddress = envvar
+	if envvar := os.Getenv("TOPIC"); len(envvar) > 0 {
+		topic = envvar
 	}
 
 	//Get consumer group
@@ -75,7 +78,13 @@ func main() {
 	if envvar := os.Getenv("SOURCE_ID"); len(envvar) > 0 {
 		source_ID = envvar
 	}
-	//Connect to k8s api server
+	//Create channel for signal
+	cancelChan := make(chan os.Signal, 1)
+    // catch SIGETRM or SIGINTERRUPT
+    signal.Notify(cancelChan, syscall.SIGTERM, syscall.SIGINT)
+	//Start  working goroutine
+	go func ()  {
+			//Connect to k8s api server
 	k8sAPIClientset := k8sClient.ConnectToK8s()
 
 	kafkaConsumer := initConsumer(context.Background(), brockerAddress, topic, source_ID)
@@ -99,4 +108,9 @@ func main() {
 			logger.Info("Source ID mismatch", zap.String("desired source", source_ID), zap.String("current source", message.Source_ID+"_"+message.Sub_source_ID))
 		}
 	}
+	}()
+	sig := <-cancelChan
+    logger.Info("Caught SIGTERM", zap.String("Signal", sig.String()))
+    // shutdown other goroutines gracefully
+    // close other resources
 }

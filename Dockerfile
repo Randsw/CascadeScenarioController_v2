@@ -11,19 +11,20 @@ RUN go mod download
 
 # Copy the go source
 COPY main.go main.go
+COPY process.go process.go
 COPY logger/ logger/
 COPY cascadescenario/ cascadescenario/
 COPY webhook/ webhook/
 COPY k8sclient/ k8sclient/
 
 # Build
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o cascadescenariocontroller main.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o cascadescenariocontroller_v2 main.go process.go
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
 FROM gcr.io/distroless/static:nonroot
 WORKDIR /
-COPY --from=builder /workspace/cascadescenariocontroller .
+COPY --from=builder /workspace/cascadescenariocontroller_v2 .
 USER 65532:65532
 
-ENTRYPOINT ["/cascadescenariocontroller"]
+ENTRYPOINT ["/cascadescenariocontroller_v2"]

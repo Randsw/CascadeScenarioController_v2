@@ -102,7 +102,7 @@ func imageProcessing(cascadeScenatioConfig []scenarioconfig.CascadeScenarios, k8
 				if statusCode != "200" {
 					zapLogger.Error("Webhook return fail code", zap.String("error", err.Error()))
 				}
-				zapLogger.Error("Scenario execution failed", zap.String("Failed Job", jobConfig.ModuleName))
+				zapLogger.Error("Scenario execution failed", zap.String("Failed Job", jobConfig.ModuleName), zap.String("Failed scenario", k8sProcessingParameters.ScenarioName))
 				runtime.Goexit()
 			}
 		}
