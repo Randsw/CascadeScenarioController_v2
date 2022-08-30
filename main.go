@@ -40,9 +40,9 @@ func main() {
 	logger.InitLogger()
 
 	//Get Config from file mounted in tmp folder
-	//configFilename := "/tmp/configuration"
+	configFilename := "/tmp/configuration"
 
-	configFilename := "cascadescenario/test/test_success.json"
+	//configFilename := "cascadescenario/test/test_success.json"
 	
 	//configFilename := "cascadescenario/test/test_fail_first.json"
 
