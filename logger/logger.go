@@ -28,18 +28,10 @@ func InitLogger() {
 }
 
 func (z *Zaplog) Printf(message string, fields ...interface{}) {
-	// var zapFields []zap.Field
-	// for i, _ := range fields {
-	// 	zapFields[i], _ = fields[i].(zap.Field)
-	// }
 	z.logger.Info(message)
 }
 
 func KafkaError(message string, fields ...interface{}) {
-	// var zapFields []zap.Field
-	// for i  := range fields {
-	// 	zapFields[i], _ = fields[i].(zap.Field)
-	// }
 	Zaplogger.logger.Error(message)
 }
 
