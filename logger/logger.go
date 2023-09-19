@@ -24,6 +24,7 @@ func InitLogger() {
 	}
 }
 
+// Gracefully close logger
 func CloseLogger() {
 	err := Zaplogger.logger.Sync()
 	if err != nil {
