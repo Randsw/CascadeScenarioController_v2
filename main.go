@@ -4,7 +4,7 @@ import (
 	"context"
 	"os"
 	"os/signal"
-    "syscall"
+	"syscall"
 
 	//"strings"
 	"encoding/json"
@@ -38,12 +38,12 @@ type Payload struct {
 func main() {
 	//Loger Initialization
 	logger.InitLogger()
-
+	defer logger.CloseLogger()
 	//Get Config from file mounted in tmp folder
 	configFilename := "/tmp/configuration"
 
 	//configFilename := "cascadescenario/test/test_success.json"
-	
+
 	//configFilename := "cascadescenario/test/test_fail_first.json"
 
 	CascadeScenatioConfig := scenarioconfig.ReadConfigJSON(configFilename)
@@ -80,37 +80,37 @@ func main() {
 	}
 	//Create channel for signal
 	cancelChan := make(chan os.Signal, 1)
-    // catch SIGETRM or SIGINTERRUPT
-    signal.Notify(cancelChan, syscall.SIGTERM, syscall.SIGINT)
+	// catch SIGETRM or SIGINTERRUPT
+	signal.Notify(cancelChan, syscall.SIGTERM, syscall.SIGINT)
 	//Start  working goroutine
-	go func ()  {
-			//Connect to k8s api server
-	k8sAPIClientset := k8sClient.ConnectToK8s()
+	go func() {
+		//Connect to k8s api server
+		k8sAPIClientset := k8sClient.ConnectToK8s()
 
-	kafkaConsumer := initConsumer(context.Background(), brockerAddress, topic, source_ID)
+		kafkaConsumer := initConsumer(context.Background(), brockerAddress, topic, source_ID)
 
-	defer kafkaConsumer.Close()
+		defer kafkaConsumer.Close()
 
-	processingConfig := k8sScenarioConfig{ScenarioNamespace: jobNamespace, ScenarioName: scenarioName}
+		processingConfig := k8sScenarioConfig{ScenarioNamespace: jobNamespace, ScenarioName: scenarioName}
 
-	for {
-		_, kafkaValue := consume(context.Background(), kafkaConsumer)
-		var message Payload
-		err := json.Unmarshal(kafkaValue, &message)
-		if err != nil {
-			logger.Error("Kafka message unmarshal failed")
+		for {
+			_, kafkaValue := consume(context.Background(), kafkaConsumer)
+			var message Payload
+			err := json.Unmarshal(kafkaValue, &message)
+			if err != nil {
+				logger.Error("Kafka message unmarshal failed")
+			}
+			if message.Source_ID+"_"+message.Sub_source_ID == source_ID {
+				processingConfig.s3PackagePath = message.Path
+				logger.Info("Source ID match", zap.String("desired source", source_ID), zap.String("current source", message.Source_ID+"_"+message.Sub_source_ID))
+				go imageProcessing(CascadeScenatioConfig, k8sAPIClientset, statusServerAddress, processingConfig)
+			} else {
+				logger.Info("Source ID mismatch", zap.String("desired source", source_ID), zap.String("current source", message.Source_ID+"_"+message.Sub_source_ID))
+			}
 		}
-		if message.Source_ID+"_"+message.Sub_source_ID == source_ID {
-			processingConfig.s3PackagePath = message.Path
-			logger.Info("Source ID match", zap.String("desired source", source_ID), zap.String("current source", message.Source_ID+"_"+message.Sub_source_ID))
-			go imageProcessing(CascadeScenatioConfig, k8sAPIClientset, statusServerAddress, processingConfig)
-		} else {
-			logger.Info("Source ID mismatch", zap.String("desired source", source_ID), zap.String("current source", message.Source_ID+"_"+message.Sub_source_ID))
-		}
-	}
 	}()
 	sig := <-cancelChan
-    logger.Info("Caught SIGTERM", zap.String("Signal", sig.String()))
-    // shutdown other goroutines gracefully
-    // close other resources
+	logger.Info("Caught SIGTERM", zap.String("Signal", sig.String()))
+	// shutdown other goroutines gracefully
+	// close other resources
 }

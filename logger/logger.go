@@ -12,7 +12,6 @@ type Zaplog struct {
 }
 
 var Zaplogger Zaplog
-//var SugarLog *zap.SugaredLogger
 
 func InitLogger() {
 	var err error
@@ -20,11 +19,16 @@ func InitLogger() {
 	cfg.EncoderConfig.EncodeTime = zapcore.RFC3339TimeEncoder
 	cfg.EncoderConfig.FunctionKey = "func"
 	Zaplogger.logger, err = cfg.Build()
-	//SugarLog = Zaplogger.Sugar()
 	if err != nil {
 		log.Fatalf("can't initialize zap logger: %v", err)
 	}
-	defer Zaplogger.logger.Sync()
+}
+
+func CloseLogger() {
+	err := Zaplogger.logger.Sync()
+	if err != nil {
+		log.Printf("can't sync zap logger: %v", err)
+	}
 }
 
 func (z *Zaplog) Printf(message string, fields ...interface{}) {
