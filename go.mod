@@ -3,7 +3,7 @@ module github.com/randsw/cascadescenariocontroller
 go 1.17
 
 require (
-	github.com/segmentio/kafka-go v0.4.42
+	github.com/segmentio/kafka-go v0.4.43
 	k8s.io/api v0.28.2
 )
 
