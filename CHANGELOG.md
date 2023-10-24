@@ -1,3 +1,18 @@
+## [1.0.1-develop.1](https://github.com/Randsw/CascadeScenarioController_v2/compare/1.0.0...1.0.1-develop.1) (2023-10-24)
+
+
+### 🛠 Fixes
+
+* **logger:** Logger function not reported in logs ([16acdf1](https://github.com/Randsw/CascadeScenarioController_v2/commit/16acdf1a2866d3f4e8f0e7fef3205fa8eedb6918))
+
+
+### Other
+
+* **deps:** bump github.com/segmentio/kafka-go from 0.4.42 to 0.4.43 ([49958b0](https://github.com/Randsw/CascadeScenarioController_v2/commit/49958b054664716f4c5990040a52863a361e6146))
+* **deps:** bump github.com/segmentio/kafka-go from 0.4.43 to 0.4.44 ([40e5edf](https://github.com/Randsw/CascadeScenarioController_v2/commit/40e5edfbee09779572ecc724bc4b96ff7dbdf680))
+* **deps:** bump k8s.io/api from 0.28.2 to 0.28.3 ([1221ab0](https://github.com/Randsw/CascadeScenarioController_v2/commit/1221ab0bdd85b6953e671f39f1c72d720dc1d6c1))
+* **deps:** bump k8s.io/client-go from 0.28.2 to 0.28.3 ([53f8ab6](https://github.com/Randsw/CascadeScenarioController_v2/commit/53f8ab6536417865af0109cf666e5cc00d3ea54a))
+
 ## [1.0.0](https://github.com/Randsw/CascadeScenarioController_v2/compare/...1.0.0) (2023-09-19)
 
 
