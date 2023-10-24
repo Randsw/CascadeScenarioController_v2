@@ -18,7 +18,7 @@ func InitLogger() {
 	var cfg zap.Config = zap.NewProductionConfig()
 	cfg.EncoderConfig.EncodeTime = zapcore.RFC3339TimeEncoder
 	cfg.EncoderConfig.FunctionKey = "func"
-	Zaplogger.logger, err = cfg.Build()
+	Zaplogger.logger, err = cfg.Build(zap.AddCallerSkip(1))
 	if err != nil {
 		log.Fatalf("can't initialize zap logger: %v", err)
 	}
