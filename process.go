@@ -17,11 +17,11 @@ import (
 )
 
 func RandStringBytesRmndr(n int) string {
-	rand.Seed(time.Now().UnixNano())
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	const letterBytes = "abcdefghijklmnopqrstuvwxyz"
 	b := make([]byte, n)
 	for i := range b {
-		b[i] = letterBytes[rand.Int63()%int64(len(letterBytes))]
+		b[i] = letterBytes[r.Int63()%int64(len(letterBytes))]
 	}
 	return string(b)
 }
