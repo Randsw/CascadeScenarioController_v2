@@ -10,6 +10,7 @@ import (
 	scenarioconfig "github.com/randsw/cascadescenariocontroller/cascadescenario"
 	k8sClient "github.com/randsw/cascadescenariocontroller/k8sclient"
 	zapLogger "github.com/randsw/cascadescenariocontroller/logger"
+	promexporter "github.com/randsw/cascadescenariocontroller/prometheus-exporter"
 	webhook "github.com/randsw/cascadescenariocontroller/webhook"
 	kafka "github.com/segmentio/kafka-go"
 	"go.uber.org/zap"
@@ -53,7 +54,9 @@ func consume(ctx context.Context, r *kafka.Reader) ([]byte, []byte) {
 
 func imageProcessing(cascadeScenatioConfig []scenarioconfig.CascadeScenarios, k8sAPIClientset *kubernetes.Clientset,
 	statusServerAddress string, k8sProcessingParameters k8sScenarioConfig) {
-	
+	// Measure scenarion time
+	start := time.Now()
+
 	s3PkgPath := new(k8sClient.S3PackagePath)
 	randString := RandStringBytesRmndr(5)
 	for i, jobConfig := range cascadeScenatioConfig {
@@ -110,6 +113,8 @@ func imageProcessing(cascadeScenatioConfig []scenarioconfig.CascadeScenarios, k8
 	zapLogger.Info("Scenario execution finished successfully", zap.String("Scenario Name", k8sProcessingParameters.ScenarioName))
 	split := strings.Split(s3PkgPath.Path, ".tgz")
 	resultS3path := split[0] + "-final" + ".tgz"
+	// Measure and export scenario execution time
+	promexporter.ScenarioDuration.WithLabelValues("scenario").Observe(time.Since(start).Seconds())
 	statusCode, err := webhook.SendWebHook("Scenario "+k8sProcessingParameters.ScenarioName+" completed successfully. Package address - "+resultS3path, statusServerAddress)
 	if err != nil {
 		zapLogger.Error("Webhook failed", zap.String("error", err.Error()))
