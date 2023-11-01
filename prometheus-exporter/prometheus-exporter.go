@@ -30,8 +30,14 @@ var httpDuration = prometheus.NewHistogramVec(prometheus.HistogramOpts{
 }, []string{"path"})
 
 var ScenarioDuration = prometheus.NewHistogramVec(prometheus.HistogramOpts{
-	Name: "scenarion_execution_time_seconds",
-	Help: "Duration of full scenarion.",
+	Name:    "scenarion_execution_time_seconds",
+	Help:    "Duration of full scenarion.",
+	Buckets: []float64{1, 5, 20, 60, 100, 180},
+}, []string{"time"})
+
+var JobDuration = prometheus.NewHistogramVec(prometheus.HistogramOpts{
+	Name:    "job_execution_time_seconds",
+	Help:    "Duration of one job in scenarion.",
 	Buckets: []float64{1, 5, 20, 60, 100, 180},
 }, []string{"time"})
 
@@ -72,4 +78,5 @@ func init() {
 	prometheus.MustRegister(responseStatus)
 	prometheus.MustRegister(httpDuration)
 	prometheus.MustRegister(ScenarioDuration)
+	prometheus.MustRegister(JobDuration)
 }

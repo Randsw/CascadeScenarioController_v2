@@ -55,7 +55,7 @@ func consume(ctx context.Context, r *kafka.Reader) ([]byte, []byte) {
 func imageProcessing(cascadeScenatioConfig []scenarioconfig.CascadeScenarios, k8sAPIClientset *kubernetes.Clientset,
 	statusServerAddress string, k8sProcessingParameters k8sScenarioConfig) {
 	// Measure scenarion time
-	start := time.Now()
+	start_time := time.Now()
 
 	s3PkgPath := new(k8sClient.S3PackagePath)
 	randString := RandStringBytesRmndr(5)
@@ -71,6 +71,7 @@ func imageProcessing(cascadeScenatioConfig []scenarioconfig.CascadeScenarios, k8
 		//Generate random Job name
 		jobConfig.ModuleName += "-" + randString
 		//Start k8s job
+		start_time_job := time.Now()
 		k8sClient.LaunchK8sJob(k8sAPIClientset, k8sProcessingParameters.ScenarioNamespace, &jobConfig, s3PkgPath)
 		start := true
 		//Check for job status
@@ -96,6 +97,7 @@ func imageProcessing(cascadeScenatioConfig []scenarioconfig.CascadeScenarios, k8
 				if err != nil {
 					zapLogger.Error("Failed to delete successfull job", zap.String("JobName", jobConfig.ModuleName), zap.String("error", err.Error()))
 				}
+				promexporter.JobDuration.WithLabelValues(jobConfig.ModuleName).Observe(time.Since(start_time_job).Seconds())
 				break
 			} else if status == Failed { // Job failed
 				statusCode, err := webhook.SendWebHook("Module "+jobConfig.ModuleName+" in scenario "+k8sProcessingParameters.ScenarioName+" failed", statusServerAddress)
@@ -106,6 +108,7 @@ func imageProcessing(cascadeScenatioConfig []scenarioconfig.CascadeScenarios, k8
 					zapLogger.Error("Webhook return fail code", zap.String("error", err.Error()))
 				}
 				zapLogger.Error("Scenario execution failed", zap.String("Failed Job", jobConfig.ModuleName), zap.String("Failed scenario", k8sProcessingParameters.ScenarioName))
+				promexporter.JobDuration.WithLabelValues(jobConfig.ModuleName).Observe(time.Since(start_time_job).Seconds())
 				runtime.Goexit()
 			}
 		}
@@ -114,7 +117,7 @@ func imageProcessing(cascadeScenatioConfig []scenarioconfig.CascadeScenarios, k8
 	split := strings.Split(s3PkgPath.Path, ".tgz")
 	resultS3path := split[0] + "-final" + ".tgz"
 	// Measure and export scenario execution time
-	promexporter.ScenarioDuration.WithLabelValues("scenario").Observe(time.Since(start).Seconds())
+	promexporter.ScenarioDuration.WithLabelValues("scenario").Observe(time.Since(start_time).Seconds())
 	statusCode, err := webhook.SendWebHook("Scenario "+k8sProcessingParameters.ScenarioName+" completed successfully. Package address - "+resultS3path, statusServerAddress)
 	if err != nil {
 		zapLogger.Error("Webhook failed", zap.String("error", err.Error()))

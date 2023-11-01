@@ -113,9 +113,7 @@ func main() {
 		processingConfig := k8sScenarioConfig{ScenarioNamespace: jobNamespace, ScenarioName: scenarioName}
 
 		for {
-			start := time.Now()
 			_, kafkaValue := consume(context.Background(), kafkaConsumer)
-			prom.ScenarioDuration.WithLabelValues("scenario").Observe(time.Since(start).Seconds())
 			var message Payload
 			err := json.Unmarshal(kafkaValue, &message)
 			if err != nil {
