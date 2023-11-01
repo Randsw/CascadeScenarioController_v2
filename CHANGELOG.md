@@ -1,3 +1,11 @@
+## [1.2.0](https://github.com/Randsw/CascadeScenarioController_v2/compare/1.1.2...1.2.0) (2023-11-01)
+
+
+### 🚀 Features
+
+* Add standart http server metrics ([faaef18](https://github.com/Randsw/CascadeScenarioController_v2/commit/faaef18a79446dafbdfaddf5f275e56683725f93))
+* **metrics:** Add custom metric - scenario duration ([d04529b](https://github.com/Randsw/CascadeScenarioController_v2/commit/d04529b57eb11d7d2c0ab4ca6cca10fd97dbae06))
+
 ## [1.1.2](https://github.com/Randsw/CascadeScenarioController_v2/compare/1.1.1...1.1.2) (2023-11-01)
 
 
