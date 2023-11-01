@@ -1,3 +1,10 @@
+## [1.3.0](https://github.com/Randsw/CascadeScenarioController_v2/compare/1.2.2...1.3.0) (2023-11-01)
+
+
+### 🚀 Features
+
+* **metrics:** Add job duration metric ([1fafd56](https://github.com/Randsw/CascadeScenarioController_v2/commit/1fafd562172ea2095925cc61ec08632d30476ccb))
+
 ## [1.2.2](https://github.com/Randsw/CascadeScenarioController_v2/compare/1.2.1...1.2.2) (2023-11-01)
 
 
