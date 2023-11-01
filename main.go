@@ -2,14 +2,18 @@ package main
 
 import (
 	"context"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	//"strings"
 	"encoding/json"
 
+	"github.com/gorilla/mux"
 	scenarioconfig "github.com/randsw/cascadescenariocontroller/cascadescenario"
+	"github.com/randsw/cascadescenariocontroller/handlers"
 	k8sClient "github.com/randsw/cascadescenariocontroller/k8sclient"
 	"github.com/randsw/cascadescenariocontroller/logger"
 	"go.uber.org/zap"
@@ -40,6 +44,8 @@ func main() {
 	logger.InitLogger()
 	defer logger.CloseLogger()
 
+	mux := mux.NewRouter()
+	mux.HandleFunc("/healthz", handlers.GetHealth)
 	//Get Config from file mounted in tmp folder
 	configFilename := "/tmp/configuration"
 
@@ -83,7 +89,14 @@ func main() {
 	go func() {
 		sig := <-cancelChan
 		logger.Info("Caught signal", zap.String("Signal", sig.String()))
+		logger.Info("Wait for 1 second to finish processing")
+		time.Sleep(1 * time.Second)
+		logger.Info("Exiting.....")
+		// shutdown other goroutines gracefully
+		// close other resources
 		done <- true
+		os.Exit(0)
+
 	}()
 	//Start  working goroutine
 	go func() {
@@ -112,8 +125,22 @@ func main() {
 			}
 		}
 	}()
+	//Start healthz http server
+	servingAddress := ":8080"
+	srv := &http.Server{
+		Addr: servingAddress,
+		// Good practice to set timeouts to avoid Slowloris attacks.
+		WriteTimeout: time.Second * 15,
+		ReadTimeout:  time.Second * 15,
+		IdleTimeout:  time.Second * 60,
+		Handler:      mux, // Pass our instance of gorilla/mux in.
+	}
+	logger.Info("Start serving http request...", zap.String("address", servingAddress))
+	err := srv.ListenAndServe()
+	if err != nil {
+		logger.Error("Fail to start http server", zap.String("err", err.Error()))
+	}
 	<-done
-	logger.Info("Exiting.....")
 	// shutdown other goroutines gracefully
 	// close other resources
 }
