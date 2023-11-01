@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/Randsw/CascadeScenarioController_v2/compare/1.2.0...1.2.1) (2023-11-01)
+
+
+### 🛠 Fixes
+
+* **metrics:** Add prometheus middleware func. ([fc7becf](https://github.com/Randsw/CascadeScenarioController_v2/commit/fc7becf810f478c5c49b9b124ed257c6ac217472))
+
 ## [1.2.0](https://github.com/Randsw/CascadeScenarioController_v2/compare/1.1.2...1.2.0) (2023-11-01)
 
 
