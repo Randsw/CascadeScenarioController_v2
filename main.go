@@ -16,6 +16,7 @@ import (
 	"github.com/randsw/cascadescenariocontroller/handlers"
 	k8sClient "github.com/randsw/cascadescenariocontroller/k8sclient"
 	"github.com/randsw/cascadescenariocontroller/logger"
+	prom "github.com/randsw/cascadescenariocontroller/prometheus-exporter"
 	"go.uber.org/zap"
 )
 
@@ -47,6 +48,7 @@ func main() {
 	mux := mux.NewRouter()
 	mux.HandleFunc("/healthz", handlers.GetHealth)
 	mux.HandleFunc("/metrics", handlers.Metrics)
+	mux.Use(prom.PrometheusMiddleware)
 	//Get Config from file mounted in tmp folder
 	configFilename := "/tmp/configuration"
 
@@ -111,7 +113,9 @@ func main() {
 		processingConfig := k8sScenarioConfig{ScenarioNamespace: jobNamespace, ScenarioName: scenarioName}
 
 		for {
+			start := time.Now()
 			_, kafkaValue := consume(context.Background(), kafkaConsumer)
+			prom.ScenarioDuration.WithLabelValues("scenario").Observe(time.Since(start).Seconds())
 			var message Payload
 			err := json.Unmarshal(kafkaValue, &message)
 			if err != nil {
