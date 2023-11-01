@@ -1,3 +1,10 @@
+## [1.2.2](https://github.com/Randsw/CascadeScenarioController_v2/compare/1.2.1...1.2.2) (2023-11-01)
+
+
+### 🛠 Fixes
+
+* **metrics:** Fix bucket value ([28f1a89](https://github.com/Randsw/CascadeScenarioController_v2/commit/28f1a89f0d35034b7788b78962a5f0292b79879b))
+
 ## [1.2.1](https://github.com/Randsw/CascadeScenarioController_v2/compare/1.2.0...1.2.1) (2023-11-01)
 
 
