@@ -32,6 +32,7 @@ var httpDuration = prometheus.NewHistogramVec(prometheus.HistogramOpts{
 var ScenarioDuration = prometheus.NewHistogramVec(prometheus.HistogramOpts{
 	Name: "scenarion_execution_time_seconds",
 	Help: "Duration of full scenarion.",
+	Buckets: []float64{1, 5, 20, 60, 100, 180},
 }, []string{"time"})
 
 type responseWriter struct {
