@@ -39,12 +39,9 @@ func main() {
 	//Loger Initialization
 	logger.InitLogger()
 	defer logger.CloseLogger()
+
 	//Get Config from file mounted in tmp folder
 	configFilename := "/tmp/configuration"
-
-	//configFilename := "cascadescenario/test/test_success.json"
-
-	//configFilename := "cascadescenario/test/test_fail_first.json"
 
 	CascadeScenatioConfig := scenarioconfig.ReadConfigJSON(configFilename)
 	//Get pod namespace
@@ -82,6 +79,12 @@ func main() {
 	cancelChan := make(chan os.Signal, 1)
 	// catch SIGETRM or SIGINTERRUPT
 	signal.Notify(cancelChan, syscall.SIGTERM, syscall.SIGINT)
+	done := make(chan bool, 1)
+	go func() {
+		sig := <-cancelChan
+		logger.Info("Caught signal", zap.String("Signal", sig.String()))
+		done <- true
+	}()
 	//Start  working goroutine
 	go func() {
 		//Connect to k8s api server
@@ -109,8 +112,8 @@ func main() {
 			}
 		}
 	}()
-	sig := <-cancelChan
-	logger.Info("Caught SIGTERM", zap.String("Signal", sig.String()))
+	<-done
+	logger.Info("Exiting.....")
 	// shutdown other goroutines gracefully
 	// close other resources
 }
