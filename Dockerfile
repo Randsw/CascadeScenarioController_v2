@@ -12,6 +12,7 @@ RUN go mod download
 # Copy the go source
 COPY main.go main.go
 COPY process.go process.go
+COPY Makefile Makefile
 COPY logger/ logger/
 COPY cascadescenario/ cascadescenario/
 COPY webhook/ webhook/
