@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/Randsw/CascadeScenarioController_v2/compare/1.1.0...1.1.1) (2023-11-01)
+
+
+### 🛠 Fixes
+
+* Copy makefile to docker build ([4ab075f](https://github.com/Randsw/CascadeScenarioController_v2/commit/4ab075fa31c0a5efd6e3915a5edb126a586ad503))
+
 ## [1.1.0](https://github.com/Randsw/CascadeScenarioController_v2/compare/1.0.1...1.1.0) (2023-11-01)
 
 
