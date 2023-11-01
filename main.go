@@ -46,6 +46,7 @@ func main() {
 
 	mux := mux.NewRouter()
 	mux.HandleFunc("/healthz", handlers.GetHealth)
+	mux.HandleFunc("/metrics", handlers.Metrics)
 	//Get Config from file mounted in tmp folder
 	configFilename := "/tmp/configuration"
 

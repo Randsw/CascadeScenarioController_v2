@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/randsw/cascadescenariocontroller/logger"
 	"go.uber.org/zap"
 )
@@ -27,4 +28,8 @@ func GetHealth(w http.ResponseWriter, r *http.Request) {
 	if err := enc.Encode(resp); err != nil {
 		logger.Error("Error while encoding JSON response", zap.String("err", err.Error()))
 	}
+}
+
+func Metrics(w http.ResponseWriter, r *http.Request) {
+	promhttp.Handler().ServeHTTP(w, r)
 }
