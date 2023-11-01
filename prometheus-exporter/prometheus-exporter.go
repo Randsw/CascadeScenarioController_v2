@@ -29,6 +29,11 @@ var httpDuration = prometheus.NewHistogramVec(prometheus.HistogramOpts{
 	Help: "Duration of HTTP requests.",
 }, []string{"path"})
 
+var ScenarioDuration = prometheus.NewHistogramVec(prometheus.HistogramOpts{
+	Name: "scenarion_execution_time_seconds",
+	Help: "Duration of full scenarion.",
+}, []string{"time"})
+
 type responseWriter struct {
 	http.ResponseWriter
 	statusCode int
@@ -65,4 +70,5 @@ func init() {
 	prometheus.MustRegister(totalRequests)
 	prometheus.MustRegister(responseStatus)
 	prometheus.MustRegister(httpDuration)
+	prometheus.MustRegister(ScenarioDuration)
 }
