@@ -1,3 +1,10 @@
+## [1.1.2](https://github.com/Randsw/CascadeScenarioController_v2/compare/1.1.1...1.1.2) (2023-11-01)
+
+
+### 🛠 Fixes
+
+* use .dockerignore ([ace8640](https://github.com/Randsw/CascadeScenarioController_v2/commit/ace86402856a2f877396902d79ee093b90b524bb))
+
 ## [1.1.1](https://github.com/Randsw/CascadeScenarioController_v2/compare/1.1.0...1.1.1) (2023-11-01)
 
 
