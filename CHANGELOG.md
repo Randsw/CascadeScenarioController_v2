@@ -1,3 +1,21 @@
+## [1.1.0](https://github.com/Randsw/CascadeScenarioController_v2/compare/1.0.1...1.1.0) (2023-11-01)
+
+
+### :scissors: Refactor
+
+* Catch os signal in separate goroutine ([5d48803](https://github.com/Randsw/CascadeScenarioController_v2/commit/5d488033fcdadbf6d71bc25a732a2c60060bfa09))
+
+
+### 🚀 Features
+
+* Add healthz endpoint ([1a3bb15](https://github.com/Randsw/CascadeScenarioController_v2/commit/1a3bb15462c3c3a99f1f47292664b7c112e15bcd))
+
+
+### Other
+
+* Rewrite random seed generator using go 1.20 way ([1558377](https://github.com/Randsw/CascadeScenarioController_v2/commit/1558377df60acafc31c5134ca3c468fe35f9fac9))
+* **deps:** bump actions/setup-node from 3 to 4 ([3a844e2](https://github.com/Randsw/CascadeScenarioController_v2/commit/3a844e2838c0f1c090d4c12edfef47f154d5f7fa))
+
 ## [1.0.1](https://github.com/Randsw/CascadeScenarioController_v2/compare/1.0.0...1.0.1) (2023-10-24)
 
 
