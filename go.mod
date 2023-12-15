@@ -1,6 +1,8 @@
 module github.com/randsw/cascadescenariocontroller
 
-go 1.17
+go 1.21
+
+toolchain go1.21.3
 
 require (
 	github.com/gorilla/mux v1.8.1
