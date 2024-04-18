@@ -1,3 +1,37 @@
+## [1.4.0](https://github.com/Randsw/CascadeScenarioController_v2/compare/1.3.0...1.4.0) (2024-04-18)
+
+
+### 🦊 CI/CD
+
+* fix dependecies ([5230d27](https://github.com/Randsw/CascadeScenarioController_v2/commit/5230d279593d0c2dcb2377cbb6abd67d466e758f))
+
+
+### 🚀 Features
+
+* **CR:** Update status fields ([d78bbcc](https://github.com/Randsw/CascadeScenarioController_v2/commit/d78bbcc56688cb757d958b051464abfac3c156f0))
+
+
+### Other
+
+* **deps:** bump actions/setup-go from 4 to 5 ([46cc5c1](https://github.com/Randsw/CascadeScenarioController_v2/commit/46cc5c1b5945dbc69db1f40b7e68bbf44b58bddd))
+* **deps:** bump github.com/gorilla/mux from 1.8.0 to 1.8.1 ([fb192d2](https://github.com/Randsw/CascadeScenarioController_v2/commit/fb192d29e33839d0404fd806cdcf8eccbfdf0e39))
+* **deps:** bump github.com/prometheus/client_golang ([9022c10](https://github.com/Randsw/CascadeScenarioController_v2/commit/9022c10cd926eada32578dba9e808b2084c5a414))
+* **deps:** bump github.com/prometheus/client_golang ([0dee1d9](https://github.com/Randsw/CascadeScenarioController_v2/commit/0dee1d95484082f862d5708061b0e9c6dba52a93))
+* **deps:** bump github.com/segmentio/kafka-go from 0.4.44 to 0.4.45 ([cdc84b6](https://github.com/Randsw/CascadeScenarioController_v2/commit/cdc84b6a19036eab780219d5d209e9fc8b9e8c7e))
+* **deps:** bump github.com/segmentio/kafka-go from 0.4.45 to 0.4.46 ([b196143](https://github.com/Randsw/CascadeScenarioController_v2/commit/b1961434ad33187063f016a9b1b883259fba49f0))
+* **deps:** bump github.com/segmentio/kafka-go from 0.4.46 to 0.4.47 ([b852b25](https://github.com/Randsw/CascadeScenarioController_v2/commit/b852b25116ebd5b435b9a9a761fbc1065585d57b))
+* **deps:** bump go.uber.org/zap from 1.26.0 to 1.27.0 ([83e2748](https://github.com/Randsw/CascadeScenarioController_v2/commit/83e2748577e036515a0fb9def848254b627185ec))
+* **deps:** bump golang from 1.21 to 1.22 ([2af69b0](https://github.com/Randsw/CascadeScenarioController_v2/commit/2af69b07a3caa69b3c843fe64c3f09b8edd5fecc))
+* **deps:** bump golangci/golangci-lint-action from 3 to 4 ([defc50b](https://github.com/Randsw/CascadeScenarioController_v2/commit/defc50b542b5499a1f951b40f0dcdf721e53ea1c))
+* **deps:** bump k8s.io/api from 0.28.3 to 0.28.4 ([64ad252](https://github.com/Randsw/CascadeScenarioController_v2/commit/64ad2527ad7c4da8f8f46fb11f8702e5c170a219))
+* **deps:** bump k8s.io/client-go from 0.28.3 to 0.28.4 ([838b6a8](https://github.com/Randsw/CascadeScenarioController_v2/commit/838b6a8a35ac8ad2e2cd30c01cbf6cb1d02011d7))
+* **deps:** bump k8s.io/client-go from 0.28.4 to 0.29.0 ([4168aa3](https://github.com/Randsw/CascadeScenarioController_v2/commit/4168aa38845480660ff18819d153eb0cccdcdbd1))
+* **deps:** bump k8s.io/client-go from 0.29.0 to 0.29.1 ([f049c5c](https://github.com/Randsw/CascadeScenarioController_v2/commit/f049c5cac935601a45279057444ef1de077488b5))
+* **deps:** bump k8s.io/client-go from 0.29.1 to 0.29.2 ([4a82876](https://github.com/Randsw/CascadeScenarioController_v2/commit/4a82876919ee16cd1850a6ff4906ce424ea7915a))
+* **deps:** bump k8s.io/client-go from 0.29.2 to 0.29.3 ([941e589](https://github.com/Randsw/CascadeScenarioController_v2/commit/941e589beccb4cc4a542070be5f59f19ef196cb9))
+* **deps:** bump k8s.io/client-go from 0.29.3 to 0.29.4 ([a3152b5](https://github.com/Randsw/CascadeScenarioController_v2/commit/a3152b5a1c902acabefe2137de95f60988b01ad4))
+* **deps:** bump softprops/action-gh-release from 1 to 2 ([dc07405](https://github.com/Randsw/CascadeScenarioController_v2/commit/dc07405022c8a293826425f0d55119a73ecb73f2))
+
 ## [1.3.0](https://github.com/Randsw/CascadeScenarioController_v2/compare/1.2.2...1.3.0) (2023-11-01)
 
 
