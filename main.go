@@ -105,6 +105,7 @@ func main() {
 	go func() {
 		//Connect to k8s api server
 		k8sAPIClientset := k8sClient.ConnectToK8s()
+		k8sAPIClientDynamic := k8sClient.ConnectTOK8sDynamic()
 
 		kafkaConsumer := initConsumer(context.Background(), brockerAddress, topic, source_ID)
 
@@ -122,7 +123,7 @@ func main() {
 			if message.Source_ID+"_"+message.Sub_source_ID == source_ID {
 				processingConfig.s3PackagePath = message.Path
 				logger.Info("Source ID match", zap.String("desired source", source_ID), zap.String("current source", message.Source_ID+"_"+message.Sub_source_ID))
-				go imageProcessing(CascadeScenatioConfig, k8sAPIClientset, statusServerAddress, processingConfig)
+				go imageProcessing(CascadeScenatioConfig, k8sAPIClientset, k8sAPIClientDynamic, statusServerAddress, processingConfig)
 			} else {
 				logger.Info("Source ID mismatch", zap.String("desired source", source_ID), zap.String("current source", message.Source_ID+"_"+message.Sub_source_ID))
 			}

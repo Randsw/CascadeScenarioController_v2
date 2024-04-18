@@ -14,6 +14,7 @@ import (
 	webhook "github.com/randsw/cascadescenariocontroller/webhook"
 	kafka "github.com/segmentio/kafka-go"
 	"go.uber.org/zap"
+	"k8s.io/client-go/dynamic"
 	kubernetes "k8s.io/client-go/kubernetes"
 )
 
@@ -52,7 +53,7 @@ func consume(ctx context.Context, r *kafka.Reader) ([]byte, []byte) {
 	return msg.Key, msg.Value
 }
 
-func imageProcessing(cascadeScenatioConfig []scenarioconfig.CascadeScenarios, k8sAPIClientset *kubernetes.Clientset,
+func imageProcessing(cascadeScenatioConfig []scenarioconfig.CascadeScenarios, k8sAPIClientset *kubernetes.Clientset, k8sAPIClientDynamic dynamic.Interface,
 	statusServerAddress string, k8sProcessingParameters k8sScenarioConfig) {
 	// Measure scenarion time
 	start_time := time.Now()
@@ -74,6 +75,10 @@ func imageProcessing(cascadeScenatioConfig []scenarioconfig.CascadeScenarios, k8
 		start_time_job := time.Now()
 		k8sClient.LaunchK8sJob(k8sAPIClientset, k8sProcessingParameters.ScenarioNamespace, &jobConfig, s3PkgPath)
 		start := true
+		err := k8sClient.SetActiveCRStatus(k8sAPIClientDynamic, k8sProcessingParameters.ScenarioNamespace, k8sProcessingParameters.ScenarioName)
+		if err != nil {
+			zapLogger.Error("Error while change CR status", zap.Error(err))
+		}
 		//Check for job status
 		for {
 			status, err := k8sClient.GetJobStatus(k8sAPIClientset, jobConfig.ModuleName, k8sProcessingParameters.ScenarioNamespace)
@@ -108,12 +113,20 @@ func imageProcessing(cascadeScenatioConfig []scenarioconfig.CascadeScenarios, k8
 					zapLogger.Error("Webhook return fail code", zap.String("error", err.Error()))
 				}
 				zapLogger.Error("Scenario execution failed", zap.String("Failed Job", jobConfig.ModuleName), zap.String("Failed scenario", k8sProcessingParameters.ScenarioName))
+				err = k8sClient.SetFailedRemoveActiveStatus(k8sAPIClientDynamic, k8sProcessingParameters.ScenarioNamespace, k8sProcessingParameters.ScenarioName)
+				if err != nil {
+					zapLogger.Error("Error while change CR status", zap.Error(err))
+				}
 				promexporter.JobDuration.WithLabelValues(jobConfig.ModuleName).Observe(time.Since(start_time_job).Seconds())
 				runtime.Goexit()
 			}
 		}
 	}
 	zapLogger.Info("Scenario execution finished successfully", zap.String("Scenario Name", k8sProcessingParameters.ScenarioName))
+	err := k8sClient.SetSuccessRemoveActiveStatus(k8sAPIClientDynamic, k8sProcessingParameters.ScenarioNamespace, k8sProcessingParameters.ScenarioName)
+	if err != nil {
+		zapLogger.Error("Error while change CR status", zap.Error(err))
+	}
 	split := strings.Split(s3PkgPath.Path, ".tgz")
 	resultS3path := split[0] + "-final" + ".tgz"
 	// Measure and export scenario execution time
