@@ -1,3 +1,11 @@
+## [1.4.1](https://github.com/Randsw/CascadeScenarioController_v2/compare/1.4.0...1.4.1) (2024-04-18)
+
+
+### 🛠 Fixes
+
+* **CR:** Fix typecheck error ([2ca5b1b](https://github.com/Randsw/CascadeScenarioController_v2/commit/2ca5b1b74a8eea1e39f94a5cd124e419cc172448))
+* **CR:** Fix wrong active scenarion count ([376b882](https://github.com/Randsw/CascadeScenarioController_v2/commit/376b882fb7bb953c280eee992b577b2295e35555))
+
 ## [1.4.0](https://github.com/Randsw/CascadeScenarioController_v2/compare/1.3.0...1.4.0) (2024-04-18)
 
 
