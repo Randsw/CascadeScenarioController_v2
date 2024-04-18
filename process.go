@@ -60,6 +60,10 @@ func imageProcessing(cascadeScenatioConfig []scenarioconfig.CascadeScenarios, k8
 
 	s3PkgPath := new(k8sClient.S3PackagePath)
 	randString := RandStringBytesRmndr(5)
+	err := k8sClient.SetActiveCRStatus(k8sAPIClientDynamic, k8sProcessingParameters.ScenarioNamespace, k8sProcessingParameters.ScenarioName)
+	if err != nil {
+		zapLogger.Error("Error while change CR status", zap.Error(err))
+	}
 	for i, jobConfig := range cascadeScenatioConfig {
 		// First stage. Get path from config
 		if i == 0 {
@@ -75,10 +79,6 @@ func imageProcessing(cascadeScenatioConfig []scenarioconfig.CascadeScenarios, k8
 		start_time_job := time.Now()
 		k8sClient.LaunchK8sJob(k8sAPIClientset, k8sProcessingParameters.ScenarioNamespace, &jobConfig, s3PkgPath)
 		start := true
-		err := k8sClient.SetActiveCRStatus(k8sAPIClientDynamic, k8sProcessingParameters.ScenarioNamespace, k8sProcessingParameters.ScenarioName)
-		if err != nil {
-			zapLogger.Error("Error while change CR status", zap.Error(err))
-		}
 		//Check for job status
 		for {
 			status, err := k8sClient.GetJobStatus(k8sAPIClientset, jobConfig.ModuleName, k8sProcessingParameters.ScenarioNamespace)
