@@ -1,24 +1,26 @@
 package k8sclient
 
-
 import (
 	"context"
 	"os"
 	"strconv"
 	"strings"
 
+	"github.com/randsw/cascadescenariocontroller/api/v1alpha1"
 	scenarioconfig "github.com/randsw/cascadescenariocontroller/cascadescenario"
 	"github.com/randsw/cascadescenariocontroller/logger"
 	"go.uber.org/zap"
 	batchv1 "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/dynamic"
 	kubernetes "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	clientcmd "k8s.io/client-go/tools/clientcmd"
 )
-
-
 
 type JobStatus int
 
@@ -54,6 +56,29 @@ func ConnectToK8s() *kubernetes.Clientset {
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		logger.Error("Failed to create K8s clientset")
+		os.Exit(1)
+	}
+
+	return clientset
+}
+
+func ConnectTOK8sDynamic() dynamic.Interface {
+	var kubeconfig string
+	config, err := rest.InClusterConfig()
+	if err != nil {
+		// fallback to kubeconfigkubeconfig := filepath.Join("~", ".kube", "config")
+		if envvar := os.Getenv("KUBECONFIG"); len(envvar) > 0 {
+			kubeconfig = envvar
+		}
+		config, err = clientcmd.BuildConfigFromFlags("", kubeconfig)
+		if err != nil {
+			logger.Error("The kubeconfig cannot be loaded", zap.String("err", err.Error()))
+			os.Exit(1)
+		}
+	}
+	clientset, err := dynamic.NewForConfig(config)
+	if err != nil {
+		logger.Error("Failed to create dynamic K8s clientset")
 		os.Exit(1)
 	}
 
@@ -136,4 +161,89 @@ func DeleteSuccessJob(clientset *kubernetes.Clientset, jobName string, jobNamesp
 	background := metav1.DeletePropagationBackground
 	err := clientset.BatchV1().Jobs(jobNamespace).Delete(context.TODO(), jobName, metav1.DeleteOptions{PropagationPolicy: &background})
 	return err
+}
+
+func GetCR(clientDynamic dynamic.Interface, namespace string, name string) (*v1alpha1.CascadeAutoOperator, error) {
+	var cascadeAutoOperator = schema.GroupVersionResource{Group: "cascade.cascade.net", Version: "v1aplha1", Resource: "cascadeautooperator"}
+	var structured v1alpha1.CascadeAutoOperator
+	cascadeAutoOperatorResource, err := clientDynamic.Resource(cascadeAutoOperator).Namespace(namespace).Get(context.TODO(), name, metav1.GetOptions{}, "status")
+	if err != nil {
+		logger.Error("Error getting CascadeAutoOperator CR", zap.String("Namespace", namespace), zap.String("Name", name))
+		return nil, err
+	}
+	unstructured_item := cascadeAutoOperatorResource.UnstructuredContent()
+	err = runtime.DefaultUnstructuredConverter.FromUnstructured(unstructured_item, &structured)
+	if err != nil {
+		logger.Error("Error while converting to structured CR", zap.String("Namespace", namespace), zap.String("Name", name))
+		return nil, err
+	}
+	return &structured, nil
+}
+
+func SetActiveCRStatus(clientDynamic dynamic.Interface, namespace string, name string) error {
+	var cascadeAutoOperator = schema.GroupVersionResource{Group: "cascade.cascade.net", Version: "v1aplha1", Resource: "cascadeautooperator"}
+	structured, err := GetCR(clientDynamic, namespace, name)
+	if err != nil {
+		return err
+	}
+	structured.Status.Active++
+	cascadeAutoOperatorResourceNew, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&structured)
+	if err != nil {
+		logger.Error("Error while converting to unstructured CR", zap.String("Namespace", namespace), zap.String("Name", name))
+		return err
+	}
+	cascadeAutoOperatorResourceNewUnstr := unstructured.Unstructured{Object: cascadeAutoOperatorResourceNew}
+	_, err = clientDynamic.Resource(cascadeAutoOperator).Namespace(namespace).UpdateStatus(context.TODO(), &cascadeAutoOperatorResourceNewUnstr, metav1.UpdateOptions{})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func SetFailedRemoveActiveStatus(clientDynamic dynamic.Interface, namespace string, name string) error {
+	var cascadeAutoOperator = schema.GroupVersionResource{Group: "cascade.cascade.net", Version: "v1aplha1", Resource: "cascadeautooperator"}
+	structured, err := GetCR(clientDynamic, namespace, name)
+	if err != nil {
+		return err
+	}
+	if structured.Status.Active > 0 {
+		structured.Status.Active--
+	}
+	structured.Status.Failed++
+	structured.Status.Result = "Fail"
+	cascadeAutoOperatorResourceNew, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&structured)
+	if err != nil {
+		logger.Error("Error while converting to unstructured CR", zap.String("Namespace", namespace), zap.String("Name", name))
+		return err
+	}
+	cascadeAutoOperatorResourceNewUnstr := unstructured.Unstructured{Object: cascadeAutoOperatorResourceNew}
+	_, err = clientDynamic.Resource(cascadeAutoOperator).Namespace(namespace).UpdateStatus(context.TODO(), &cascadeAutoOperatorResourceNewUnstr, metav1.UpdateOptions{})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func SetSuccessRemoveActiveStatus(clientDynamic dynamic.Interface, namespace string, name string) error {
+	var cascadeAutoOperator = schema.GroupVersionResource{Group: "cascade.cascade.net", Version: "v1aplha1", Resource: "cascadeautooperator"}
+	structured, err := GetCR(clientDynamic, namespace, name)
+	if err != nil {
+		return err
+	}
+	if structured.Status.Active > 0 {
+		structured.Status.Active--
+	}
+	structured.Status.Succeeded++
+	structured.Status.Result = "Success"
+	cascadeAutoOperatorResourceNew, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&structured)
+	if err != nil {
+		logger.Error("Error while converting to unstructured CR", zap.String("Namespace", namespace), zap.String("Name", name))
+		return err
+	}
+	cascadeAutoOperatorResourceNewUnstr := unstructured.Unstructured{Object: cascadeAutoOperatorResourceNew}
+	_, err = clientDynamic.Resource(cascadeAutoOperator).Namespace(namespace).UpdateStatus(context.TODO(), &cascadeAutoOperatorResourceNewUnstr, metav1.UpdateOptions{})
+	if err != nil {
+		return err
+	}
+	return nil
 }
