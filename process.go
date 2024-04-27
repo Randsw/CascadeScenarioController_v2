@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"runtime"
 	"strings"
+	"sync"
 	"time"
 
 	scenarioconfig "github.com/randsw/cascadescenariocontroller/cascadescenario"
@@ -56,14 +57,33 @@ func consume(ctx context.Context, r *kafka.Reader) ([]byte, []byte) {
 func imageProcessing(cascadeScenatioConfig []scenarioconfig.CascadeScenarios, k8sAPIClientset *kubernetes.Clientset, k8sAPIClientDynamic dynamic.Interface,
 	statusServerAddress string, k8sProcessingParameters k8sScenarioConfig) {
 	// Measure scenarion time
+	var wg sync.WaitGroup
 	start_time := time.Now()
-
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	s3PkgPath := new(k8sClient.S3PackagePath)
 	randString := RandStringBytesRmndr(5)
-	err := k8sClient.SetActiveCRStatus(k8sAPIClientDynamic, k8sProcessingParameters.ScenarioNamespace, k8sProcessingParameters.ScenarioName)
-	if err != nil {
-		zapLogger.Error("Error while change CR status", zap.Error(err))
-	}
+	// Set active status in CR
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		err := k8sClient.SetActiveCRStatus(k8sAPIClientDynamic, k8sProcessingParameters.ScenarioNamespace, k8sProcessingParameters.ScenarioName)
+		if err != nil {
+			// Try again with random delay within min and max seconds
+			min := 5
+			max := 20
+			randomTime := r.Intn(max-min) + min
+			zapLogger.Error("Error while change CR status. Retrying...", zap.Error(err), zap.String("Namespace", k8sProcessingParameters.ScenarioNamespace),
+				zap.String("Name", k8sProcessingParameters.ScenarioName))
+			time.Sleep(time.Second * time.Duration(randomTime))
+			zapLogger.Info("Retry change CR status", zap.Error(err), zap.String("Namespace", k8sProcessingParameters.ScenarioNamespace),
+				zap.String("Name", k8sProcessingParameters.ScenarioName))
+			err := k8sClient.SetActiveCRStatus(k8sAPIClientDynamic, k8sProcessingParameters.ScenarioNamespace, k8sProcessingParameters.ScenarioName)
+			if err != nil {
+				zapLogger.Error("Error while second attempt to change CR status.", zap.Error(err), zap.String("Namespace", k8sProcessingParameters.ScenarioNamespace),
+					zap.String("Name", k8sProcessingParameters.ScenarioName))
+			}
+		}
+	}()
 	for i, jobConfig := range cascadeScenatioConfig {
 		// First stage. Get path from config
 		if i == 0 {
@@ -113,20 +133,56 @@ func imageProcessing(cascadeScenatioConfig []scenarioconfig.CascadeScenarios, k8
 					zapLogger.Error("Webhook return fail code", zap.String("error", err.Error()))
 				}
 				zapLogger.Error("Scenario execution failed", zap.String("Failed Job", jobConfig.ModuleName), zap.String("Failed scenario", k8sProcessingParameters.ScenarioName))
-				err = k8sClient.SetFailedRemoveActiveStatus(k8sAPIClientDynamic, k8sProcessingParameters.ScenarioNamespace, k8sProcessingParameters.ScenarioName)
-				if err != nil {
-					zapLogger.Error("Error while change CR status", zap.Error(err))
-				}
+				// Set failed status in CR
+				wg.Add(1)
+				go func() {
+					defer wg.Done()
+					err := k8sClient.SetFailedRemoveActiveStatus(k8sAPIClientDynamic, k8sProcessingParameters.ScenarioNamespace, k8sProcessingParameters.ScenarioName)
+					if err != nil {
+						// Try again with random delay within min and max seconds
+						min := 5
+						max := 20
+						randomTime := r.Intn(max-min) + min
+						zapLogger.Error("Error while change CR status. Retrying...", zap.Error(err), zap.String("Namespace", k8sProcessingParameters.ScenarioNamespace),
+							zap.String("Name", k8sProcessingParameters.ScenarioName))
+						time.Sleep(time.Second * time.Duration(randomTime))
+						zapLogger.Info("Retry change CR status", zap.Error(err), zap.String("Namespace", k8sProcessingParameters.ScenarioNamespace),
+							zap.String("Name", k8sProcessingParameters.ScenarioName))
+						err := k8sClient.SetFailedRemoveActiveStatus(k8sAPIClientDynamic, k8sProcessingParameters.ScenarioNamespace, k8sProcessingParameters.ScenarioName)
+						if err != nil {
+							zapLogger.Error("Error while second attempt to change CR status.", zap.Error(err), zap.String("Namespace", k8sProcessingParameters.ScenarioNamespace),
+								zap.String("Name", k8sProcessingParameters.ScenarioName))
+						}
+					}
+				}()
 				promexporter.JobDuration.WithLabelValues(jobConfig.ModuleName).Observe(time.Since(start_time_job).Seconds())
 				runtime.Goexit()
 			}
 		}
 	}
 	zapLogger.Info("Scenario execution finished successfully", zap.String("Scenario Name", k8sProcessingParameters.ScenarioName))
-	err = k8sClient.SetSuccessRemoveActiveStatus(k8sAPIClientDynamic, k8sProcessingParameters.ScenarioNamespace, k8sProcessingParameters.ScenarioName)
-	if err != nil {
-		zapLogger.Error("Error while change CR status", zap.Error(err))
-	}
+	// Set success status in CR
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		err := k8sClient.SetSuccessRemoveActiveStatus(k8sAPIClientDynamic, k8sProcessingParameters.ScenarioNamespace, k8sProcessingParameters.ScenarioName)
+		if err != nil {
+			// Try again with random delay within min and max seconds
+			min := 5
+			max := 20
+			randomTime := r.Intn(max-min) + min
+			zapLogger.Error("Error while change CR status. Retrying...", zap.Error(err), zap.String("Namespace", k8sProcessingParameters.ScenarioNamespace),
+				zap.String("Name", k8sProcessingParameters.ScenarioName))
+			time.Sleep(time.Second * time.Duration(randomTime))
+			zapLogger.Info("Retry change CR status", zap.Error(err), zap.String("Namespace", k8sProcessingParameters.ScenarioNamespace),
+				zap.String("Name", k8sProcessingParameters.ScenarioName))
+			err := k8sClient.SetSuccessRemoveActiveStatus(k8sAPIClientDynamic, k8sProcessingParameters.ScenarioNamespace, k8sProcessingParameters.ScenarioName)
+			if err != nil {
+				zapLogger.Error("Error while second attempt to change CR status.", zap.Error(err), zap.String("Namespace", k8sProcessingParameters.ScenarioNamespace),
+					zap.String("Name", k8sProcessingParameters.ScenarioName))
+			}
+		}
+	}()
 	split := strings.Split(s3PkgPath.Path, ".tgz")
 	resultS3path := split[0] + "-final" + ".tgz"
 	// Measure and export scenario execution time
@@ -138,4 +194,5 @@ func imageProcessing(cascadeScenatioConfig []scenarioconfig.CascadeScenarios, k8
 	if statusCode != "200" {
 		zapLogger.Error("Webhook return fail code", zap.String("error", err.Error()))
 	}
+	wg.Wait()
 }
