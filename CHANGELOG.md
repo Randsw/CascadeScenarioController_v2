@@ -1,3 +1,18 @@
+## [1.5.0](https://github.com/Randsw/CascadeScenarioController_v2/compare/1.4.1...1.5.0) (2024-04-27)
+
+
+### 🚀 Features
+
+* **CR:** Use async CR status update ([9f413ed](https://github.com/Randsw/CascadeScenarioController_v2/commit/9f413ed54c8976b8412bb2f718b226334273deb4))
+
+
+### Other
+
+* **deps:** Bump Go to 1.22 ([b78d381](https://github.com/Randsw/CascadeScenarioController_v2/commit/b78d3810eb1e6291de69726f8a9646df1a307bcc))
+* **deps:** bump golangci/golangci-lint-action from 4 to 5 ([b4568f8](https://github.com/Randsw/CascadeScenarioController_v2/commit/b4568f852fe34a057c0aef13a7de1cff899874bc))
+* **deps:** bump k8s.io/client-go from 0.29.4 to 0.30.0 ([38c962a](https://github.com/Randsw/CascadeScenarioController_v2/commit/38c962a90c957348fe72e04492e73d21fb64e598))
+* **deps:** bump sigs.k8s.io/controller-runtime from 0.17.3 to 0.18.0 ([ed82101](https://github.com/Randsw/CascadeScenarioController_v2/commit/ed821014ad500a8279f17a47cf6febcb4404396f))
+
 ## [1.4.1](https://github.com/Randsw/CascadeScenarioController_v2/compare/1.4.0...1.4.1) (2024-04-18)
 
 
