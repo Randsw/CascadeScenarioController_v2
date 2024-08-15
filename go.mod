@@ -9,7 +9,7 @@ require (
 	github.com/prometheus/client_golang v1.20.0
 	github.com/segmentio/kafka-go v0.4.47
 	k8s.io/api v0.31.0
-	sigs.k8s.io/controller-runtime v0.18.5
+	sigs.k8s.io/controller-runtime v0.19.0
 )
 
 require (
