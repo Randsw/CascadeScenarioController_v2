@@ -26,7 +26,7 @@ type ChHandler struct {
 }
 
 type RunConfig struct {
-	CascadeScenatioConfig []cascadescenario.CascadeScenarios
+	CascadeScenarioConfig []cascadescenario.CascadeScenarios
 	JobNamespace          string
 	ScenarioName          string
 	SID                   string
@@ -125,5 +125,5 @@ func (run *RunHandler) StartRun(w http.ResponseWriter, r *http.Request) {
 	processingConfig.SName = Payload.SName
 
 	logger.Info("Start Cascade run")
-	go process.ImageProcessing(run.Config.CascadeScenatioConfig, run.Config.K8sClient, run.Config.K8sDynClient, processingConfig, run.Config.GlobalChannel)
+	go process.ImageProcessing(run.Config.CascadeScenarioConfig, run.Config.K8sClient, run.Config.K8sDynClient, processingConfig, run.Config.GlobalChannel)
 }

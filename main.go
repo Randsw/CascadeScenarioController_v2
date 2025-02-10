@@ -7,8 +7,6 @@ import (
 	"syscall"
 	"time"
 
-	//"strings"
-
 	"github.com/gorilla/mux"
 	scenarioconfig "github.com/randsw/cascadescenariocontroller/cascadescenario"
 	"github.com/randsw/cascadescenariocontroller/handlers"
@@ -63,7 +61,7 @@ func main() {
 	//Get Config from file mounted in tmp folder
 	configFilename := "/tmp/configuration"
 
-	CascadeScenatioConfig := scenarioconfig.ReadConfigJSON(configFilename)
+	CascadeScenarioConfig := scenarioconfig.ReadConfigJSON(configFilename)
 	//Get pod namespace
 	jobNamespace := "cascade-operator"
 	if envvar := os.Getenv("POD_NAMESPACE"); len(envvar) > 0 {
@@ -77,7 +75,7 @@ func main() {
 
 	// Get sID
 	sID := "UnderTest"
-	if envvar := os.Getenv("SOURCE_ID"); len(envvar) > 0 {
+	if envvar := os.Getenv("SID"); len(envvar) > 0 {
 		sID = envvar
 	}
 
@@ -136,7 +134,7 @@ func main() {
 		}
 	}()
 	config := &handlers.RunConfig{
-		CascadeScenatioConfig: CascadeScenatioConfig,
+		CascadeScenarioConfig: CascadeScenarioConfig,
 		JobNamespace:          jobNamespace,
 		ScenarioName:          scenarioName,
 		SID:                   sID,

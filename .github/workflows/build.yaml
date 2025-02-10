@@ -49,6 +49,8 @@ jobs:
         name: "Release"
         runs-on: "ubuntu-latest"
         steps:
+        - name: Config Git # https://github.com/rickstaa/action-contains-tag/pull/18
+          run: git config --global remote.origin.followRemoteHEAD never
         - name: Checkout
           uses: actions/checkout@v4
           with:
