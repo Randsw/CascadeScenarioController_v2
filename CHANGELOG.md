@@ -1,3 +1,47 @@
+## [1.6.0](https://github.com/Randsw/CascadeScenarioController_v2/compare/1.5.0...1.6.0) (2025-02-10)
+
+
+### 🚀 Features
+
+* Add gracefull shutdown. Remove kafka. Add http post request processing ([c8d7698](https://github.com/Randsw/CascadeScenarioController_v2/commit/c8d769801cfc6e3da1effc2707765fbe3e2426ac))
+
+
+### Other
+
+* Update client-go ([1947807](https://github.com/Randsw/CascadeScenarioController_v2/commit/1947807746c961c680687a033581634122b8744a))
+* **deps:** bump docker/build-push-action from 5 to 6 ([3625680](https://github.com/Randsw/CascadeScenarioController_v2/commit/36256807f7cc86010a6d201f02c659d6c645683a))
+* **deps:** bump github.com/prometheus/client_golang ([a9fb958](https://github.com/Randsw/CascadeScenarioController_v2/commit/a9fb958f634d2fb27e51f23853913fb17d5bfc19))
+* **deps:** bump github.com/prometheus/client_golang ([7991574](https://github.com/Randsw/CascadeScenarioController_v2/commit/799157426644a18179a9332cf78f13a1b570b68f))
+* **deps:** bump github.com/prometheus/client_golang ([d6d1f52](https://github.com/Randsw/CascadeScenarioController_v2/commit/d6d1f520c3cd0ccf654c9daaef032b1967f6a1cc))
+* **deps:** bump github.com/prometheus/client_golang ([aa26c23](https://github.com/Randsw/CascadeScenarioController_v2/commit/aa26c23899b3639cca9309e8539479ce1c7acf1b))
+* **deps:** bump github.com/prometheus/client_golang ([03819ae](https://github.com/Randsw/CascadeScenarioController_v2/commit/03819ae7d61f803feda1a81fc985b619f1532309))
+* **deps:** bump github.com/prometheus/client_golang ([4282d19](https://github.com/Randsw/CascadeScenarioController_v2/commit/4282d191d1158d10d3e04ca3e22b620ebb8fc8ae))
+* **deps:** bump github.com/prometheus/client_golang ([b635e1c](https://github.com/Randsw/CascadeScenarioController_v2/commit/b635e1c389b7a338a9b20fb72d93e3f9f88bdbee))
+* **deps:** bump golang from 1.22 to 1.23 ([a5281d0](https://github.com/Randsw/CascadeScenarioController_v2/commit/a5281d08674665b7b523fb09c13d391df4505818))
+* **deps:** bump golangci/golangci-lint-action from 5 to 6 ([df11e8d](https://github.com/Randsw/CascadeScenarioController_v2/commit/df11e8dec8b2e3a9c0730afb2a6e7838b336acfd))
+* **deps:** bump k8s.io/api from 0.31.3 to 0.31.4 ([0be6651](https://github.com/Randsw/CascadeScenarioController_v2/commit/0be6651993ab1a2d90a87fb865be1f1c15c9a0d6))
+* **deps:** bump k8s.io/client-go from 0.30.0 to 0.30.1 ([e6e30fb](https://github.com/Randsw/CascadeScenarioController_v2/commit/e6e30fbf26572f2870712eb645d765deb3cc0d25))
+* **deps:** bump k8s.io/client-go from 0.30.1 to 0.30.2 ([ca2b75c](https://github.com/Randsw/CascadeScenarioController_v2/commit/ca2b75c1e7871ffbcaeaf80db91621fd7fcb74a3))
+* **deps:** bump k8s.io/client-go from 0.30.2 to 0.30.3 ([094b9a9](https://github.com/Randsw/CascadeScenarioController_v2/commit/094b9a93958824dae38d78ac2b599de3413f76a2))
+* **deps:** bump k8s.io/client-go from 0.30.3 to 0.31.0 ([933bd7f](https://github.com/Randsw/CascadeScenarioController_v2/commit/933bd7f73ac49e46995f45bdf09668785d011d27))
+* **deps:** bump k8s.io/client-go from 0.31.0 to 0.31.1 ([cc89a69](https://github.com/Randsw/CascadeScenarioController_v2/commit/cc89a69b56e3d5931ba1001616be36b473d30a51))
+* **deps:** bump k8s.io/client-go from 0.31.1 to 0.31.2 ([ddd92f2](https://github.com/Randsw/CascadeScenarioController_v2/commit/ddd92f260028f3771e41cf2f416b43121040acec))
+* **deps:** bump k8s.io/client-go from 0.31.2 to 0.31.3 ([7d8b2bd](https://github.com/Randsw/CascadeScenarioController_v2/commit/7d8b2bdd69edf8666eaca3c6918483c0da454fb4))
+* **deps:** bump k8s.io/client-go from 0.31.3 to 0.32.0 ([0f47d35](https://github.com/Randsw/CascadeScenarioController_v2/commit/0f47d35ea3a425304c00133a7aac2ba30f4cf676))
+* **deps:** bump k8s.io/client-go from 0.32.0 to 0.32.1 ([8fbebba](https://github.com/Randsw/CascadeScenarioController_v2/commit/8fbebbaf83277c38e7a4234f93b1c7d62d2c36f5))
+* **deps:** bump sigs.k8s.io/controller-runtime from 0.18.0 to 0.18.1 ([baa17c6](https://github.com/Randsw/CascadeScenarioController_v2/commit/baa17c6e4b3065a1c2290d530ce4862f9f934fcd))
+* **deps:** bump sigs.k8s.io/controller-runtime from 0.18.1 to 0.18.2 ([91cbc8d](https://github.com/Randsw/CascadeScenarioController_v2/commit/91cbc8d6aab67ed50ddaf0acd87e89969f6c9329))
+* **deps:** bump sigs.k8s.io/controller-runtime from 0.18.2 to 0.18.3 ([ab027cb](https://github.com/Randsw/CascadeScenarioController_v2/commit/ab027cbd8e695f90e78c6a294dedf5d713c8c378))
+* **deps:** bump sigs.k8s.io/controller-runtime from 0.18.3 to 0.18.4 ([133e147](https://github.com/Randsw/CascadeScenarioController_v2/commit/133e1476415d72a10d08691899318ac74d1571d6))
+* **deps:** bump sigs.k8s.io/controller-runtime from 0.18.4 to 0.18.5 ([7d6fc47](https://github.com/Randsw/CascadeScenarioController_v2/commit/7d6fc47d7d5a496ee406c2a8ea2000243cc5fcaa))
+* **deps:** bump sigs.k8s.io/controller-runtime from 0.18.5 to 0.19.0 ([7b09a46](https://github.com/Randsw/CascadeScenarioController_v2/commit/7b09a46c9ad09d026c230a76b191119f9361dcdd))
+* **deps:** bump sigs.k8s.io/controller-runtime from 0.19.0 to 0.19.1 ([abdda59](https://github.com/Randsw/CascadeScenarioController_v2/commit/abdda5933394396a327f2c87b1608491bbac9691))
+* **deps:** bump sigs.k8s.io/controller-runtime from 0.19.1 to 0.19.2 ([433ce07](https://github.com/Randsw/CascadeScenarioController_v2/commit/433ce0716974335edc070ce9cde4f0e5f5c95a83))
+* **deps:** bump sigs.k8s.io/controller-runtime from 0.19.2 to 0.19.3 ([ce01e1e](https://github.com/Randsw/CascadeScenarioController_v2/commit/ce01e1e3d7dc615ea3540eca5ff2b8885848790d))
+* **deps:** bump sigs.k8s.io/controller-runtime from 0.19.3 to 0.19.4 ([5d43f22](https://github.com/Randsw/CascadeScenarioController_v2/commit/5d43f22d79e642956efc3916c0768cbebde77c89))
+* **deps:** bump sigs.k8s.io/controller-runtime from 0.19.4 to 0.20.0 ([3404829](https://github.com/Randsw/CascadeScenarioController_v2/commit/3404829b686523cb4e18ce1da22aea7bd18fc364))
+* **deps:** bump sigs.k8s.io/controller-runtime from 0.20.0 to 0.20.1 ([1a43ff6](https://github.com/Randsw/CascadeScenarioController_v2/commit/1a43ff6295b2517890ff8720b9f366ff43d42edd))
+
 ## [1.5.0](https://github.com/Randsw/CascadeScenarioController_v2/compare/1.4.1...1.5.0) (2024-04-27)
 
 
