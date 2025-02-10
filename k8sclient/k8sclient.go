@@ -2,9 +2,10 @@ package k8sclient
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"strconv"
-	"strings"
+	_ "strings"
 
 	"github.com/randsw/cascadescenariocontroller/api/v1alpha1"
 	scenarioconfig "github.com/randsw/cascadescenariocontroller/cascadescenario"
@@ -31,10 +32,22 @@ const (
 	Failed
 )
 
-type S3PackagePath struct {
-	StageNum    int
-	Path        string
-	IsLastStage bool
+type K8sScenarioConfig struct {
+	ScenarioNamespace string
+	ScenarioName      string
+	S3Path            string
+	TUUID             string
+	OutMinioAddress   string
+	SName             string
+	Ob                string
+}
+
+type S3TransferPath struct {
+	StageNum        int
+	Path            string
+	IsLastStage     bool
+	UUID            string
+	OutMinioAddress string
 }
 
 func ConnectToK8s() *kubernetes.Clientset {
@@ -62,8 +75,9 @@ func ConnectToK8s() *kubernetes.Clientset {
 	return clientset
 }
 
-func ConnectTOK8sDynamic() dynamic.Interface {
+func ConnectTOK8sDinamic() dynamic.Interface {
 	var kubeconfig string
+
 	config, err := rest.InClusterConfig()
 	if err != nil {
 		// fallback to kubeconfigkubeconfig := filepath.Join("~", ".kube", "config")
@@ -76,16 +90,17 @@ func ConnectTOK8sDynamic() dynamic.Interface {
 			os.Exit(1)
 		}
 	}
-	clientset, err := dynamic.NewForConfig(config)
+
+	dynClient, err := dynamic.NewForConfig(config)
 	if err != nil {
 		logger.Error("Failed to create dynamic K8s clientset")
 		os.Exit(1)
 	}
-
-	return clientset
+	return dynClient
 }
 
-func LaunchK8sJob(clientset *kubernetes.Clientset, namespace string, config *scenarioconfig.CascadeScenarios, s3path *S3PackagePath) {
+func LaunchK8sJob(clientset *kubernetes.Clientset, namespace string, config *scenarioconfig.CascadeScenarios, s3path *S3TransferPath, scenarioName string) {
+	minio_test := s3path.OutMinioAddress + scenarioName + "/" + s3path.UUID + "/"
 	jobs := clientset.BatchV1().Jobs(namespace)
 
 	labels := map[string]string{"app": "Cascade", "modulename": config.ModuleName}
@@ -103,17 +118,31 @@ func LaunchK8sJob(clientset *kubernetes.Clientset, namespace string, config *sce
 		podEnv = append(podEnv, v1.EnvVar{Name: "s3path", Value: s3path.Path})
 	}
 	if s3path.StageNum > 0 {
-		split := strings.Split(s3path.Path, ".tgz")
-		podEnv = append(podEnv, v1.EnvVar{Name: "s3path", Value: split[0] + "-stage-" + strconv.Itoa(s3path.StageNum) + ".tgz"})
+		//split := strings.Split(s3path.Path, ".zip")
+		podEnv = append(podEnv, v1.EnvVar{Name: "s3path", Value: minio_test + s3path.UUID + "-stage-" + strconv.Itoa(s3path.StageNum) + ".zip"})
 	}
 	if s3path.IsLastStage {
 		podEnv = append(podEnv, v1.EnvVar{Name: "finalstage", Value: "true"})
 	}
+	podEnv = append(podEnv, v1.EnvVar{Name: "NAMESPACE", ValueFrom: &v1.EnvVarSource{
+		FieldRef: &v1.ObjectFieldSelector{
+			FieldPath: "metadata.namespace",
+		},
+	},
+	})
+	podEnv = append(podEnv, v1.EnvVar{Name: "NAMESPACE", ValueFrom: &v1.EnvVarSource{
+		FieldRef: &v1.ObjectFieldSelector{
+			FieldPath: "metadata.namespace",
+		},
+	},
+	})
+	podEnv = append(podEnv, v1.EnvVar{Name: "SCENARIONAME", Value: scenarioName})
+
 	JobTemplate.Spec.Containers[0].Env = podEnv
 
 	jobSpec := &batchv1.Job{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      config.ModuleName,
+			Name:      scenarioName + "-" + config.ModuleName,
 			Namespace: namespace,
 			Labels:    labels,
 		},
@@ -164,7 +193,7 @@ func DeleteSuccessJob(clientset *kubernetes.Clientset, jobName string, jobNamesp
 }
 
 func GetCR(clientDynamic dynamic.Interface, namespace string, name string) (*v1alpha1.CascadeAutoOperator, error) {
-	var cascadeAutoOperator = schema.GroupVersionResource{Group: "cascade.cascade.net", Version: "v1aplha1", Resource: "cascadeautooperator"}
+	var cascadeAutoOperator = schema.GroupVersionResource{Group: "cascade.cascade.net", Version: "v1alpha1", Resource: "cascadeautooperators"}
 	var structured v1alpha1.CascadeAutoOperator
 	cascadeAutoOperatorResource, err := clientDynamic.Resource(cascadeAutoOperator).Namespace(namespace).Get(context.TODO(), name, metav1.GetOptions{}, "status")
 	if err != nil {
@@ -180,8 +209,25 @@ func GetCR(clientDynamic dynamic.Interface, namespace string, name string) (*v1a
 	return &structured, nil
 }
 
-func SetActiveCRStatus(clientDynamic dynamic.Interface, namespace string, name string) error {
-	var cascadeAutoOperator = schema.GroupVersionResource{Group: "cascade.cascade.net", Version: "v1aplha1", Resource: "cascadeautooperator"}
+func GetCRRun(clientDynamic dynamic.Interface, namespace string, name string) (*v1alpha1.CascadeRun, error) {
+	var cascadeRun = schema.GroupVersionResource{Group: "cascade.cascade.net", Version: "v1alpha1", Resource: "cascaderuns"}
+	var structured v1alpha1.CascadeRun
+	cascadeRunResource, err := clientDynamic.Resource(cascadeRun).Namespace(namespace).Get(context.TODO(), name, metav1.GetOptions{}, "status")
+	if err != nil {
+		logger.Error("Error getting CascadeRun CR", zap.String("Namespace", namespace), zap.String("Name", name))
+		return nil, err
+	}
+	unstructured_item := cascadeRunResource.UnstructuredContent()
+	err = runtime.DefaultUnstructuredConverter.FromUnstructured(unstructured_item, &structured)
+	if err != nil {
+		logger.Error("Error while converting to structured CR", zap.String("Namespace", namespace), zap.String("Name", name))
+		return nil, err
+	}
+	return &structured, nil
+}
+
+func SetActiveCRDStatus(clientDynamic dynamic.Interface, namespace string, name string) error {
+	var cascadeAutoOperator = schema.GroupVersionResource{Group: "cascade.cascade.net", Version: "v1alpha1", Resource: "cascadeautooperators"}
 	structured, err := GetCR(clientDynamic, namespace, name)
 	if err != nil {
 		return err
@@ -201,7 +247,7 @@ func SetActiveCRStatus(clientDynamic dynamic.Interface, namespace string, name s
 }
 
 func SetFailedRemoveActiveStatus(clientDynamic dynamic.Interface, namespace string, name string) error {
-	var cascadeAutoOperator = schema.GroupVersionResource{Group: "cascade.cascade.net", Version: "v1aplha1", Resource: "cascadeautooperator"}
+	var cascadeAutoOperator = schema.GroupVersionResource{Group: "cascade.cascade.net", Version: "v1alpha1", Resource: "cascadeautooperators"}
 	structured, err := GetCR(clientDynamic, namespace, name)
 	if err != nil {
 		return err
@@ -225,7 +271,7 @@ func SetFailedRemoveActiveStatus(clientDynamic dynamic.Interface, namespace stri
 }
 
 func SetSuccessRemoveActiveStatus(clientDynamic dynamic.Interface, namespace string, name string) error {
-	var cascadeAutoOperator = schema.GroupVersionResource{Group: "cascade.cascade.net", Version: "v1aplha1", Resource: "cascadeautooperator"}
+	var cascadeAutoOperator = schema.GroupVersionResource{Group: "cascade.cascade.net", Version: "v1alpha1", Resource: "cascadeautooperators"}
 	structured, err := GetCR(clientDynamic, namespace, name)
 	if err != nil {
 		return err
@@ -242,6 +288,139 @@ func SetSuccessRemoveActiveStatus(clientDynamic dynamic.Interface, namespace str
 	}
 	cascadeAutoOperatorResourceNewUnstr := unstructured.Unstructured{Object: cascadeAutoOperatorResourceNew}
 	_, err = clientDynamic.Resource(cascadeAutoOperator).Namespace(namespace).UpdateStatus(context.TODO(), &cascadeAutoOperatorResourceNewUnstr, metav1.UpdateOptions{})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func CreateCascadeRunCRD(clientDynamic dynamic.Interface, namespace string, name string, k8sProcessingParameters K8sScenarioConfig, cascadeScenatioConfig []scenarioconfig.CascadeScenarios) error {
+	// Create modules Name list
+	var modules []string
+	for _, module := range cascadeScenatioConfig {
+		modules = append(modules, module.ModuleName)
+	}
+	crd := &v1alpha1.CascadeRun{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "CascadeRun",
+			APIVersion: "cascade.cascade.net/v1alpha1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: namespace,
+		},
+		Spec: v1alpha1.CascadeRunSpec{
+			Ob: k8sProcessingParameters.Ob,
+			Src:          k8sProcessingParameters.SName,
+			PID:          k8sProcessingParameters.TUUID,
+			ScenarioName: k8sProcessingParameters.ScenarioName,
+			//Modules name
+			Modules: modules,
+		},
+	}
+	gvr := schema.GroupVersionResource{
+		Group:    "cascade.cascade.net",
+		Version:  "v1alpha1",
+		Resource: "cascaderuns",
+	}
+	CascadecascadeRun, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&crd)
+	if err != nil {
+		logger.Error("Error while converting CascadeRun to unstructured CR", zap.String("Namespace", namespace), zap.String("Name", name))
+		return err
+	}
+	_, err = clientDynamic.Resource(gvr).Namespace(namespace).Create(context.TODO(), &unstructured.Unstructured{Object: CascadecascadeRun}, metav1.CreateOptions{})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func SetCascadeRunStatus(clientDynamic dynamic.Interface, namespace string, name string, status map[string]string) error {
+	var cascadeRun = schema.GroupVersionResource{Group: "cascade.cascade.net", Version: "v1alpha1", Resource: "cascaderuns"}
+	structured, err := GetCRRun(clientDynamic, namespace, name)
+	if err != nil {
+		return err
+	}
+	for k, v := range status {
+		if k != "runname" {
+			str := fmt.Sprintf("%s: %s\\n", k, v)
+			structured.Status.Result = append(structured.Status.Result, str)
+		}
+	}
+	cascadeRunResourceNew, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&structured)
+	if err != nil {
+		logger.Error("Error while converting to unstructured CR", zap.String("Namespace", namespace), zap.String("Name", name))
+		return err
+	}
+	cascadeRunResourceNewUnstr := unstructured.Unstructured{Object: cascadeRunResourceNew}
+	_, err = clientDynamic.Resource(cascadeRun).Namespace(namespace).UpdateStatus(context.TODO(), &cascadeRunResourceNewUnstr, metav1.UpdateOptions{})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func SetCascadeRunFinalStatus(clientDynamic dynamic.Interface, namespace string, name string, isSuccess bool, resultAddress string) error {
+	var cascadeRun = schema.GroupVersionResource{Group: "cascade.cascade.net", Version: "v1alpha1", Resource: "cascaderuns"}
+	structured, err := GetCRRun(clientDynamic, namespace, name)
+	if err != nil {
+		return err
+	}
+	if isSuccess {
+		structured.Status.Info = resultAddress
+	} else {
+		structured.Status.Info = "Failed"
+	}
+	cascadeRunResourceNew, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&structured)
+	if err != nil {
+		logger.Error("Error while converting to unstructured CR", zap.String("Namespace", namespace), zap.String("Name", name))
+		return err
+	}
+	cascadeRunResourceNewUnstr := unstructured.Unstructured{Object: cascadeRunResourceNew}
+	_, err = clientDynamic.Resource(cascadeRun).Namespace(namespace).UpdateStatus(context.TODO(), &cascadeRunResourceNewUnstr, metav1.UpdateOptions{})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func WatchDeletetionTimeStampCRD(clientDynamic dynamic.Interface, namespace string, name string) (bool, error) {
+	structured, err := GetCR(clientDynamic, namespace, name)
+	if err != nil {
+		return false, err
+	}
+	if structured.DeletionTimestamp != nil {
+		return true, nil
+	} else {
+		return false, nil
+	}
+}
+
+func DeleteFinalizerCRD(clientDynamic dynamic.Interface, namespace string, name string, finalizer string) error {
+	var cascadeAutoOperator = schema.GroupVersionResource{Group: "cascade.cascade.net", Version: "v1alpha1", Resource: "cascadeautooperators"}
+	structured, err := GetCR(clientDynamic, namespace, name)
+	if err != nil {
+		return err
+	}
+	f := []string{}
+	index := 0
+	for i := 0; i < len(structured.Finalizers); i++ {
+		if structured.Finalizers[i] == finalizer {
+			logger.Info("Found desired finalizer", zap.String("Finalizer", structured.Finalizers[i]))
+			continue
+		}
+		f[index] = structured.Finalizers[i]
+		index++
+	}
+	structured.Finalizers = f
+	logger.Info("Delete finalizer in CRD", zap.String("Namespace", namespace), zap.String("Name", name))
+	cascadeRunResourceNew, err := runtime.DefaultUnstructuredConverter.ToUnstructured(&structured)
+	if err != nil {
+		logger.Error("Error while converting to unstructured CR", zap.String("Namespace", namespace), zap.String("Name", name))
+		return err
+	}
+	cascadeAutoOperatorResourceNewUnstr := unstructured.Unstructured{Object: cascadeRunResourceNew}
+	_, err = clientDynamic.Resource(cascadeAutoOperator).Namespace(namespace).Update(context.TODO(), &cascadeAutoOperatorResourceNewUnstr, metav1.UpdateOptions{})
 	if err != nil {
 		return err
 	}

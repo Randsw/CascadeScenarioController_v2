@@ -10,4 +10,4 @@ LDFLAGS := -w -X github.com/randsw/cascadescenariocontroller/handlers.hash=$(HAS
 
 .PHONY: build
 build:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags "$(LDFLAGS)" -a -o cascadescenariocontroller_auto main.go process.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags "$(LDFLAGS)" -a -o cascadescenariocontroller_auto main.go
