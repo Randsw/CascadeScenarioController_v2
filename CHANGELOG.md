@@ -1,3 +1,10 @@
+## [1.6.1](https://github.com/Randsw/CascadeScenarioController_v2/compare/1.6.0...1.6.1) (2025-02-10)
+
+
+### 🛠 Fixes
+
+* Fix typo in variables name ([115eaf8](https://github.com/Randsw/CascadeScenarioController_v2/commit/115eaf8d441f43ff64f61fd7792c3220309732f6))
+
 ## [1.6.0](https://github.com/Randsw/CascadeScenarioController_v2/compare/1.5.0...1.6.0) (2025-02-10)
 
 
