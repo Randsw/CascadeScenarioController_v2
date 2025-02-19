@@ -3,6 +3,7 @@ package cascadescenario
 import (
 	"testing"
 )
+
 func TestReadConfigJSON(t *testing.T) {
 	expectedModulesNum := 3
 	filename := "./test/test_fail_first.json"

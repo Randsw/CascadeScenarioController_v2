@@ -1,24 +1,24 @@
 package webhook
 
 import (
-    "net/http"
-	"encoding/json"
 	"bytes"
+	"encoding/json"
+	"net/http"
 	"strconv"
 )
 
-func SendWebHook (message string, address string) (string, error) {
+func SendWebHook(message string, address string) (string, error) {
 	values := map[string]string{"message": message}
-    jsonData, err := json.Marshal(values)
-    if err != nil {
-        return "", err
-    }
-    resp, err := http.Post(address, "application/json",
-        bytes.NewBuffer(jsonData))
+	jsonData, err := json.Marshal(values)
+	if err != nil {
+		return "", err
+	}
+	resp, err := http.Post(address, "application/json",
+		bytes.NewBuffer(jsonData))
 
-    if err != nil {
-        return "", err
-    }
+	if err != nil {
+		return "", err
+	}
 
 	defer resp.Body.Close()
 

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"strconv"
-	_ "strings"
 
 	"github.com/randsw/cascadescenariocontroller/api/v1alpha1"
 	scenarioconfig "github.com/randsw/cascadescenariocontroller/cascadescenario"
@@ -310,7 +309,7 @@ func CreateCascadeRunCRD(clientDynamic dynamic.Interface, namespace string, name
 			Namespace: namespace,
 		},
 		Spec: v1alpha1.CascadeRunSpec{
-			Ob: k8sProcessingParameters.Ob,
+			Ob:           k8sProcessingParameters.Ob,
 			Src:          k8sProcessingParameters.SName,
 			PID:          k8sProcessingParameters.TUUID,
 			ScenarioName: k8sProcessingParameters.ScenarioName,
