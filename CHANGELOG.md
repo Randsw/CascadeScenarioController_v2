@@ -1,3 +1,17 @@
+## [1.6.2](https://github.com/Randsw/CascadeScenarioController_v2/compare/1.6.1...1.6.2) (2025-02-19)
+
+
+### 🛠 Fixes
+
+* Add pre-commit hooks. Fix all linter and checker errors ([27237b2](https://github.com/Randsw/CascadeScenarioController_v2/commit/27237b23763b0598584ec6d1358acd836c0fad65))
+
+
+### Other
+
+* **deps:** bump golang from 1.23 to 1.24 ([39ffa2c](https://github.com/Randsw/CascadeScenarioController_v2/commit/39ffa2c174801db7684e28ea3588f58f234b844e))
+* **deps:** bump k8s.io/client-go from 0.32.1 to 0.32.2 ([6334777](https://github.com/Randsw/CascadeScenarioController_v2/commit/6334777be8c29cac802f2ba90dea91304911d68e))
+* **deps:** bump sigs.k8s.io/controller-runtime from 0.20.1 to 0.20.2 ([43dfbe7](https://github.com/Randsw/CascadeScenarioController_v2/commit/43dfbe7cbd5f3be5c07a05154ff4e9b111b18a5f))
+
 ## [1.6.1](https://github.com/Randsw/CascadeScenarioController_v2/compare/1.6.0...1.6.1) (2025-02-10)
 
 
