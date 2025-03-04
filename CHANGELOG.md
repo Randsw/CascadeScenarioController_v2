@@ -1,3 +1,15 @@
+## [1.7.0](https://github.com/Randsw/CascadeScenarioController_v2/compare/1.6.2...1.7.0) (2025-03-04)
+
+
+### 🚀 Features
+
+* **metrics:** Improve metrics ([09fb25f](https://github.com/Randsw/CascadeScenarioController_v2/commit/09fb25fe269974bede73d1382aa99d4b7c59a36b))
+
+
+### Other
+
+* **deps:** bump github.com/prometheus/client_golang ([16545ac](https://github.com/Randsw/CascadeScenarioController_v2/commit/16545ac593bc6ea10c57b2d072a640108434fbcf))
+
 ## [1.6.2](https://github.com/Randsw/CascadeScenarioController_v2/compare/1.6.1...1.6.2) (2025-02-19)
 
 
