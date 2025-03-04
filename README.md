@@ -1,1 +1,1 @@
-# Sequence task execution controller. Starting on event from kafka
+# Sequence task execution controller. Starting on receiving POST request
