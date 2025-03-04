@@ -33,6 +33,7 @@ func ImageProcessing(cascadeScenatioConfig []scenarioconfig.CascadeScenarios, k8
 	var wg sync.WaitGroup
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	start_time := time.Now()
+	promexporter.CurrentRuns.WithLabelValues(k8sProcessingParameters.ScenarioName, k8sProcessingParameters.Ob, k8sProcessingParameters.SName).Inc()
 	s3PkgPath := new(k8sClient.S3TransferPath)
 	s3PkgPath.UUID = k8sProcessingParameters.TUUID
 	s3PkgPath.OutMinioAddress = k8sProcessingParameters.OutMinioAddress
@@ -158,6 +159,8 @@ func ImageProcessing(cascadeScenatioConfig []scenarioconfig.CascadeScenarios, k8
 					}()
 					// Wait for all statuses flush to CRD
 					zapLogger.Error("Scenario failed. Couldn't get job status", zap.String("JobName", k8sProcessingParameters.ScenarioName+"-"+jobConfig.ModuleName), zap.String("TransferUUID", s3PkgPath.UUID), zap.String("error", err.Error()))
+					promexporter.TotalFailedScenario.WithLabelValues(k8sProcessingParameters.ScenarioName, k8sProcessingParameters.Ob, k8sProcessingParameters.SName).Inc()
+					promexporter.CurrentRuns.WithLabelValues(k8sProcessingParameters.ScenarioName, k8sProcessingParameters.Ob, k8sProcessingParameters.SName).Dec()
 					zapLogger.Info("Closing control channel")
 					stop <- true
 					wg.Wait()
@@ -175,7 +178,7 @@ func ImageProcessing(cascadeScenatioConfig []scenarioconfig.CascadeScenarios, k8
 				if err != nil {
 					zapLogger.Error("Failed to delete successfull job", zap.String("JobName", k8sProcessingParameters.ScenarioName+"-"+jobConfig.ModuleName), zap.String("TransferUUID", s3PkgPath.UUID), zap.String("error", err.Error()))
 				}
-				promexporter.JobDuration.WithLabelValues(k8sProcessingParameters.ScenarioName + "-" + jobConfig.ModuleName).Observe(time.Since(start_time_job).Seconds())
+				promexporter.JobDuration.WithLabelValues(k8sProcessingParameters.ScenarioName, jobConfig.ModuleName, k8sProcessingParameters.Ob, k8sProcessingParameters.SName, "success").Observe(time.Since(start_time_job).Seconds())
 				break
 			} else if status == Failed { // Job failed
 				zapLogger.Error("Scenario execution failed", zap.String("Failed Job", k8sProcessingParameters.ScenarioName+"-"+jobConfig.ModuleName), zap.String("TransferUUID", s3PkgPath.UUID), zap.String("Failed scenario", k8sProcessingParameters.ScenarioName))
@@ -216,7 +219,9 @@ func ImageProcessing(cascadeScenatioConfig []scenarioconfig.CascadeScenarios, k8
 						}
 					}
 				}()
-				promexporter.JobDuration.WithLabelValues(k8sProcessingParameters.ScenarioName + "-" + jobConfig.ModuleName).Observe(time.Since(start_time_job).Seconds())
+				promexporter.JobDuration.WithLabelValues(k8sProcessingParameters.ScenarioName, jobConfig.ModuleName, k8sProcessingParameters.Ob, k8sProcessingParameters.SName, "fail").Observe(time.Since(start_time_job).Seconds())
+				promexporter.TotalFailedScenario.WithLabelValues(k8sProcessingParameters.ScenarioName, k8sProcessingParameters.Ob, k8sProcessingParameters.SName).Inc()
+				promexporter.CurrentRuns.WithLabelValues(k8sProcessingParameters.ScenarioName, k8sProcessingParameters.Ob, k8sProcessingParameters.SName).Dec()
 				zapLogger.Info("Closing control channel")
 				stop <- true
 				wg.Wait()
@@ -265,7 +270,9 @@ func ImageProcessing(cascadeScenatioConfig []scenarioconfig.CascadeScenarios, k8
 		}
 	}()
 	// Measure and export scenario execution time
-	promexporter.ScenarioDuration.WithLabelValues("scenario").Observe(time.Since(start_time).Seconds())
+	promexporter.ScenarioDuration.WithLabelValues(k8sProcessingParameters.ScenarioName, k8sProcessingParameters.Ob, k8sProcessingParameters.SName).Observe(time.Since(start_time).Seconds())
+	promexporter.TotalSucceedScenario.WithLabelValues(k8sProcessingParameters.ScenarioName, k8sProcessingParameters.Ob, k8sProcessingParameters.SName).Inc()
+	promexporter.CurrentRuns.WithLabelValues(k8sProcessingParameters.ScenarioName, k8sProcessingParameters.Ob, k8sProcessingParameters.SName).Dec()
 	zapLogger.Info("Closing control channel")
 	stop <- true
 	wg.Wait()
