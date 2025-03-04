@@ -6,7 +6,7 @@ toolchain go1.23.4
 
 require (
 	github.com/gorilla/mux v1.8.1
-	github.com/prometheus/client_golang v1.21.0
+	github.com/prometheus/client_golang v1.21.1
 	k8s.io/api v0.32.2
 	sigs.k8s.io/controller-runtime v0.20.2
 )
