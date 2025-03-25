@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+
+	"github.com/randsw/cascadescenariocontroller/logger"
 )
 
 func SendWebHook(message string, address string) (string, error) {
@@ -19,8 +21,11 @@ func SendWebHook(message string, address string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-
-	defer resp.Body.Close()
-
+	defer func() {
+		err = resp.Body.Close()
+		if err != nil {
+			logger.Error("Cant close response body")
+		}
+	}()
 	return strconv.Itoa(resp.StatusCode), nil
 }
