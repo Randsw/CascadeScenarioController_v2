@@ -1,3 +1,24 @@
+## [1.7.1](https://github.com/Randsw/CascadeScenarioController_v2/compare/1.7.0...1.7.1) (2025-03-25)
+
+
+### 📔 Docs
+
+* Update docs ([5fcb7fd](https://github.com/Randsw/CascadeScenarioController_v2/commit/5fcb7fdeb92accbc5186535510c487fead794b26))
+
+
+### 🛠 Fixes
+
+* Fix golangci-lint errors ([43d5fa6](https://github.com/Randsw/CascadeScenarioController_v2/commit/43d5fa623217ae46172f19109776cfcb02843ab8))
+
+
+### Other
+
+* **deps:** bump github.com/prometheus/client_golang ([bb8fcd4](https://github.com/Randsw/CascadeScenarioController_v2/commit/bb8fcd4a8983e6f719b87b6ecb7800ee41219d7f))
+* **deps:** bump golangci/golangci-lint-action from 6 to 7 ([32dcd3c](https://github.com/Randsw/CascadeScenarioController_v2/commit/32dcd3c1e7d58c8f703e3bedf0de953480c1fee9))
+* **deps:** bump k8s.io/client-go from 0.32.2 to 0.32.3 ([e545c01](https://github.com/Randsw/CascadeScenarioController_v2/commit/e545c0156ed4d4fd42cddb0558159573ef7c1365))
+* **deps:** bump sigs.k8s.io/controller-runtime from 0.20.2 to 0.20.3 ([99ab34a](https://github.com/Randsw/CascadeScenarioController_v2/commit/99ab34a4ae788e51f4eef3646d204ded25a30e63))
+* **deps:** bump sigs.k8s.io/controller-runtime from 0.20.3 to 0.20.4 ([2ac97e8](https://github.com/Randsw/CascadeScenarioController_v2/commit/2ac97e8ff765001661952ff7c5c6e310677da134))
+
 ## [1.7.0](https://github.com/Randsw/CascadeScenarioController_v2/compare/1.6.2...1.7.0) (2025-03-04)
 
 
