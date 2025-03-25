@@ -15,7 +15,7 @@ var Zaplogger Zaplog
 
 func InitLogger() {
 	var err error
-	var cfg zap.Config = zap.NewProductionConfig()
+	cfg := zap.NewProductionConfig()
 	cfg.EncoderConfig.EncodeTime = zapcore.RFC3339TimeEncoder
 	cfg.EncoderConfig.FunctionKey = "func"
 	Zaplogger.logger, err = cfg.Build(zap.AddCallerSkip(1))
