@@ -9,7 +9,7 @@ func TestReadConfigJSON(t *testing.T) {
 	filename := "./test/test_fail_first.json"
 	modules := ReadConfigJSON(filename)
 	if len(modules) != expectedModulesNum {
-		t.Errorf("Output %q not equal to expected %q", len(modules), expectedModulesNum)
+		t.Errorf("Output %d not equal to expected %d", len(modules), expectedModulesNum)
 		return
 	}
 	t.Log("Number of modules is correct")
@@ -20,7 +20,7 @@ func TestReadConfigJSONBackoffLimit(t *testing.T) {
 	filename := "./test/test_fail_first.json"
 	modules := ReadConfigJSON(filename)
 	if *modules[0].BackoffLimit != int32(expectedBackoffLimit) {
-		t.Errorf("Output %q not equal to expected %q", *modules[0].BackoffLimit, expectedBackoffLimit)
+		t.Errorf("Output %d not equal to expected %d", *modules[0].BackoffLimit, expectedBackoffLimit)
 		return
 	}
 	t.Log("Scenario controller job backofflimit is correct")
