@@ -75,5 +75,5 @@ type CascadeRunList struct {
 }
 
 func init() {
-	SchemeBuilder.Register(&CascadeRun{}, &CascadeRunList{})
+	SchemeBuilder.Register(addKnownTypes)
 }
