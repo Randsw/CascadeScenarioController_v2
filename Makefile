@@ -1,4 +1,4 @@
-GO_VERSION := 1.21
+GO_VERSION := 1.26
 
 TAG := $(shell git describe --abbrev=0 --tags --always)
 HASH := $(shell git rev-parse HEAD)
