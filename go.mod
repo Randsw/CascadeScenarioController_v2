@@ -6,7 +6,6 @@ require (
 	github.com/gorilla/mux v1.8.1
 	github.com/prometheus/client_golang v1.23.2
 	k8s.io/api v0.36.0
-	sigs.k8s.io/controller-runtime v0.24.0
 )
 
 require (
