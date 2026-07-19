@@ -25,20 +25,6 @@ const (
 	Failed
 )
 
-// retryWithLogging executes a function with retry logic and logs errors.
-// It uses the default retry configuration and logs both the initial error and retry attempts.
-func retryWithLogging(fn func() error, namespace, name, transferUUID string) error {
-	err := DoWithRetryDefault(fn)
-	if err != nil {
-		zapLogger.Error("Error while second attempt to change CR status.",
-			zap.Error(err),
-			zap.String("Namespace", namespace),
-			zap.String("Name", name),
-			zap.String("TransferUUID", transferUUID))
-	}
-	return err
-}
-
 // retryWithLoggingNoReturn executes a function with retry logic and logs errors.
 // Unlike retryWithLogging, it doesn't return the error (for fire-and-forget goroutines).
 func retryWithLoggingNoReturn(fn func() error, namespace, name, transferUUID string) {
