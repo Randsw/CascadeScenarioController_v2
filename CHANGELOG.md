@@ -1,3 +1,20 @@
+## [1.7.3](https://github.com/Randsw/CascadeScenarioController_v2/compare/1.7.2...1.7.3) (2026-07-19)
+
+
+### 🛠 Fixes
+
+* Fix critical bugs ([e21ba1d](https://github.com/Randsw/CascadeScenarioController_v2/commit/e21ba1d0ebdf0751841a59b9db3fef9a53d8e8c2))
+
+
+### Other
+
+* **deps:** bump actions/checkout from 6 to 7 ([e812e4a](https://github.com/Randsw/CascadeScenarioController_v2/commit/e812e4aa09b42fc12c66ba1f1f4eb152288ade5f))
+* **deps:** bump actions/setup-go from 6 to 7 ([6bd4b0b](https://github.com/Randsw/CascadeScenarioController_v2/commit/6bd4b0b79f0d584fad75d728fff7905a84b4b91f))
+* **deps:** bump actions/setup-node from 6 to 7 ([4e4e759](https://github.com/Randsw/CascadeScenarioController_v2/commit/4e4e759edc50f06b04c99e34d0d09526dbc9bdd7))
+* **deps:** bump k8s.io/client-go from 0.36.0 to 0.36.1 ([b2f0fd7](https://github.com/Randsw/CascadeScenarioController_v2/commit/b2f0fd7ac96df11b2c32216d98c36b1570d8758d))
+* **deps:** bump k8s.io/client-go from 0.36.1 to 0.36.2 ([11e6726](https://github.com/Randsw/CascadeScenarioController_v2/commit/11e67264f8194739715f7eea3f887dbb2d79588a))
+* **deps:** bump sigs.k8s.io/controller-runtime from 0.24.0 to 0.24.1 ([df8d734](https://github.com/Randsw/CascadeScenarioController_v2/commit/df8d73483cea79126ca634f98bc1862e08c43f4e))
+
 ## [1.7.2](https://github.com/Randsw/CascadeScenarioController_v2/compare/1.7.1...1.7.2) (2026-05-06)
 
 
