@@ -1,3 +1,10 @@
+## [1.7.4](https://github.com/Randsw/CascadeScenarioController_v2/compare/1.7.3...1.7.4) (2026-07-19)
+
+
+### 🛠 Fixes
+
+* Remove unused func ([602e2b6](https://github.com/Randsw/CascadeScenarioController_v2/commit/602e2b6a2818b061bb0ee39bae566e5b11915018))
+
 ## [1.7.3](https://github.com/Randsw/CascadeScenarioController_v2/compare/1.7.2...1.7.3) (2026-07-19)
 
 
