@@ -25,8 +25,11 @@ func main() {
 	logger.InitLogger()
 	defer logger.CloseLogger()
 
-	//Get Config from file mounted in tmp folder
+	//Get Config from file - configurable via CONFIG_PATH environment variable
 	configFilename := "/tmp/configuration"
+	if envvar := os.Getenv("CONFIG_PATH"); len(envvar) > 0 {
+		configFilename = envvar
+	}
 
 	CascadeScenarioConfig := scenarioconfig.ReadConfigJSON(configFilename)
 	//Get pod namespace

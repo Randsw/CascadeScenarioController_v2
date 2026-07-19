@@ -2,7 +2,6 @@ package process
 
 import (
 	"fmt"
-	"math/rand"
 	"runtime"
 	"sync"
 	"sync/atomic"
@@ -26,12 +25,31 @@ const (
 	Failed
 )
 
+// retryWithLogging executes a function with retry logic and logs errors.
+// It uses the default retry configuration and logs both the initial error and retry attempts.
+func retryWithLogging(fn func() error, namespace, name, transferUUID string) error {
+	err := DoWithRetryDefault(fn)
+	if err != nil {
+		zapLogger.Error("Error while second attempt to change CR status.",
+			zap.Error(err),
+			zap.String("Namespace", namespace),
+			zap.String("Name", name),
+			zap.String("TransferUUID", transferUUID))
+	}
+	return err
+}
+
+// retryWithLoggingNoReturn executes a function with retry logic and logs errors.
+// Unlike retryWithLogging, it doesn't return the error (for fire-and-forget goroutines).
+func retryWithLoggingNoReturn(fn func() error, namespace, name, transferUUID string) {
+	_ = DoWithRetryDefault(fn)
+}
+
 func ImageProcessing(cascadeScenatioConfig []scenarioconfig.CascadeScenarios, k8sAPIClientset *kubernetes.Clientset, k8sAPIClientDynamic dynamic.Interface,
 	k8sProcessingParameters k8sClient.K8sScenarioConfig, GlobalChannel chan map[string]string) {
 	stop := make(chan bool)
 	// Measure scenarion time
 	var wg sync.WaitGroup
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	start_time := time.Now()
 	promexporter.CurrentRuns.WithLabelValues(k8sProcessingParameters.ScenarioName, k8sProcessingParameters.Ob, k8sProcessingParameters.SName).Inc()
 	s3PkgPath := new(k8sClient.S3TransferPath)
@@ -57,17 +75,10 @@ func ImageProcessing(cascadeScenatioConfig []scenarioconfig.CascadeScenarios, k8
 					zapLogger.Info("Get data from channel", zap.String("Data", string(fmt.Sprintf("%v", result))))
 					err := k8sClient.SetCascadeRunStatus(k8sAPIClientDynamic, k8sProcessingParameters.ScenarioNamespace, result["runname"], result)
 					if err != nil {
-						// random sleep min-max seconds
-						min := 5
-						max := 20
-						randomTime := r.Intn(max-min) + min
 						zapLogger.Error("Error while change CR status. Retrying....", zap.Error(err), zap.String("Namespace", k8sProcessingParameters.ScenarioNamespace), zap.String("Name", result["runname"]), zap.String("TransferUUID", s3PkgPath.UUID))
-						time.Sleep(time.Second * time.Duration(randomTime))
-						zapLogger.Info("Retry change CR status", zap.String("Namespace", k8sProcessingParameters.ScenarioNamespace), zap.String("Name", k8sProcessingParameters.ScenarioName), zap.String("TransferUUID", s3PkgPath.UUID))
-						err := k8sClient.SetCascadeRunStatus(k8sAPIClientDynamic, k8sProcessingParameters.ScenarioNamespace, result["runname"], result)
-						if err != nil {
-							zapLogger.Error("Error while second attempt to change CR status.", zap.Error(err), zap.String("Namespace", k8sProcessingParameters.ScenarioNamespace), zap.String("Name", result["runname"]), zap.String("TransferUUID", s3PkgPath.UUID))
-						}
+						retryWithLoggingNoReturn(func() error {
+							return k8sClient.SetCascadeRunStatus(k8sAPIClientDynamic, k8sProcessingParameters.ScenarioNamespace, result["runname"], result)
+						}, k8sProcessingParameters.ScenarioNamespace, result["runname"], s3PkgPath.UUID)
 					}
 				default:
 					continue
@@ -80,18 +91,10 @@ func ImageProcessing(cascadeScenatioConfig []scenarioconfig.CascadeScenarios, k8
 		defer wg.Done()
 		err := k8sClient.SetActiveCRDStatus(k8sAPIClientDynamic, k8sProcessingParameters.ScenarioNamespace, k8sProcessingParameters.ScenarioName)
 		if err != nil {
-			// Try Again one time with little sleep period like 100 ms if we get concurent access to CR
-			// random sleep min-max seconds
-			min := 5
-			max := 20
-			randomTime := r.Intn(max-min) + min
 			zapLogger.Error("Error while change CR status. Retrying....", zap.Error(err), zap.String("Namespace", k8sProcessingParameters.ScenarioNamespace), zap.String("Name", k8sProcessingParameters.ScenarioName), zap.String("TransferUUID", s3PkgPath.UUID))
-			time.Sleep(time.Second * time.Duration(randomTime))
-			zapLogger.Info("Retry change CR status", zap.String("Namespace", k8sProcessingParameters.ScenarioNamespace), zap.String("Name", k8sProcessingParameters.ScenarioName), zap.String("TransferUUID", s3PkgPath.UUID))
-			err := k8sClient.SetActiveCRDStatus(k8sAPIClientDynamic, k8sProcessingParameters.ScenarioNamespace, k8sProcessingParameters.ScenarioName)
-			if err != nil {
-				zapLogger.Error("Error while second attempt to change CR status.", zap.Error(err), zap.String("Namespace", k8sProcessingParameters.ScenarioNamespace), zap.String("Name", k8sProcessingParameters.ScenarioName), zap.String("TransferUUID", s3PkgPath.UUID))
-			}
+			retryWithLoggingNoReturn(func() error {
+				return k8sClient.SetActiveCRDStatus(k8sAPIClientDynamic, k8sProcessingParameters.ScenarioNamespace, k8sProcessingParameters.ScenarioName)
+			}, k8sProcessingParameters.ScenarioNamespace, k8sProcessingParameters.ScenarioName, s3PkgPath.UUID)
 		}
 	}()
 	// Increment process count
@@ -123,39 +126,17 @@ func ImageProcessing(cascadeScenatioConfig []scenarioconfig.CascadeScenarios, k8
 					wg.Add(1)
 					go func() {
 						defer wg.Done()
-						err := k8sClient.SetFailedRemoveActiveStatus(k8sAPIClientDynamic, k8sProcessingParameters.ScenarioNamespace, k8sProcessingParameters.ScenarioName)
-						if err != nil {
-							// random sleep min-max seconds
-							min := 5
-							max := 20
-							randomTime := r.Intn(max-min) + min
-							zapLogger.Error("Error while change CR status. Retrying....", zap.Error(err), zap.String("Namespace", k8sProcessingParameters.ScenarioNamespace), zap.String("Name", k8sProcessingParameters.ScenarioName), zap.String("TransferUUID", s3PkgPath.UUID))
-							time.Sleep(time.Second * time.Duration(randomTime))
-							zapLogger.Info("Retry change CR status", zap.String("Namespace", k8sProcessingParameters.ScenarioNamespace), zap.String("Name", k8sProcessingParameters.ScenarioName), zap.String("TransferUUID", s3PkgPath.UUID))
-							err := k8sClient.SetFailedRemoveActiveStatus(k8sAPIClientDynamic, k8sProcessingParameters.ScenarioNamespace, k8sProcessingParameters.ScenarioName)
-							if err != nil {
-								zapLogger.Error("Error while second attempt to change CR status.", zap.Error(err), zap.String("Namespace", k8sProcessingParameters.ScenarioNamespace), zap.String("Name", k8sProcessingParameters.ScenarioName), zap.String("TransferUUID", s3PkgPath.UUID))
-							}
-						}
+						retryWithLoggingNoReturn(func() error {
+							return k8sClient.SetFailedRemoveActiveStatus(k8sAPIClientDynamic, k8sProcessingParameters.ScenarioNamespace, k8sProcessingParameters.ScenarioName)
+						}, k8sProcessingParameters.ScenarioNamespace, k8sProcessingParameters.ScenarioName, s3PkgPath.UUID)
 					}()
 					// Set final status in cascaderuns CR
 					wg.Add(1)
 					go func() {
 						defer wg.Done()
-						err := k8sClient.SetCascadeRunFinalStatus(k8sAPIClientDynamic, k8sProcessingParameters.ScenarioNamespace, k8sProcessingParameters.ScenarioName+"-"+s3PkgPath.UUID[0:5], false, "")
-						if err != nil {
-							// random sleep min-max seconds
-							min := 5
-							max := 20
-							randomTime := r.Intn(max-min) + min
-							zapLogger.Error("Error while change CR status. Retrying....", zap.Error(err), zap.String("Namespace", k8sProcessingParameters.ScenarioNamespace), zap.String("Name", k8sProcessingParameters.ScenarioName+"-"+s3PkgPath.UUID[0:5]), zap.String("TransferUUID", s3PkgPath.UUID))
-							time.Sleep(time.Second * time.Duration(randomTime))
-							zapLogger.Info("Retry change CR status", zap.String("Namespace", k8sProcessingParameters.ScenarioNamespace), zap.String("Name", k8sProcessingParameters.ScenarioName+"-"+s3PkgPath.UUID[0:5]), zap.String("TransferUUID", s3PkgPath.UUID))
-							err := k8sClient.SetCascadeRunFinalStatus(k8sAPIClientDynamic, k8sProcessingParameters.ScenarioNamespace, k8sProcessingParameters.ScenarioName+"-"+s3PkgPath.UUID[0:5], true, "")
-							if err != nil {
-								zapLogger.Error("Error while second attempt to change CR status.", zap.Error(err), zap.String("Namespace", k8sProcessingParameters.ScenarioNamespace), zap.String("Name", k8sProcessingParameters.ScenarioName+"-"+s3PkgPath.UUID[0:5]), zap.String("TransferUUID", s3PkgPath.UUID))
-							}
-						}
+						retryWithLoggingNoReturn(func() error {
+							return k8sClient.SetCascadeRunFinalStatus(k8sAPIClientDynamic, k8sProcessingParameters.ScenarioNamespace, k8sProcessingParameters.ScenarioName+"-"+s3PkgPath.UUID[0:5], false, "")
+						}, k8sProcessingParameters.ScenarioNamespace, k8sProcessingParameters.ScenarioName+"-"+s3PkgPath.UUID[0:5], s3PkgPath.UUID)
 					}()
 					// Wait for all statuses flush to CRD
 					zapLogger.Error("Scenario failed. Couldn't get job status", zap.String("JobName", k8sProcessingParameters.ScenarioName+"-"+jobConfig.ModuleName), zap.String("TransferUUID", s3PkgPath.UUID), zap.String("error", err.Error()))
@@ -185,39 +166,17 @@ func ImageProcessing(cascadeScenatioConfig []scenarioconfig.CascadeScenarios, k8
 				wg.Add(1)
 				go func() {
 					defer wg.Done()
-					err := k8sClient.SetFailedRemoveActiveStatus(k8sAPIClientDynamic, k8sProcessingParameters.ScenarioNamespace, k8sProcessingParameters.ScenarioName)
-					if err != nil {
-						// random sleep min-max seconds
-						min := 5
-						max := 20
-						randomTime := r.Intn(max-min) + min
-						zapLogger.Error("Error while change CR status. Retrying....", zap.Error(err), zap.String("Namespace", k8sProcessingParameters.ScenarioNamespace), zap.String("Name", k8sProcessingParameters.ScenarioName), zap.String("TransferUUID", s3PkgPath.UUID))
-						time.Sleep(time.Second * time.Duration(randomTime))
-						zapLogger.Info("Retry change CR status", zap.String("Namespace", k8sProcessingParameters.ScenarioNamespace), zap.String("Name", k8sProcessingParameters.ScenarioName), zap.String("TransferUUID", s3PkgPath.UUID))
-						err := k8sClient.SetActiveCRDStatus(k8sAPIClientDynamic, k8sProcessingParameters.ScenarioNamespace, k8sProcessingParameters.ScenarioName)
-						if err != nil {
-							zapLogger.Error("Error while second attempt to change CR status.", zap.Error(err), zap.String("Namespace", k8sProcessingParameters.ScenarioNamespace), zap.String("Name", k8sProcessingParameters.ScenarioName), zap.String("TransferUUID", s3PkgPath.UUID))
-						}
-					}
+					retryWithLoggingNoReturn(func() error {
+						return k8sClient.SetFailedRemoveActiveStatus(k8sAPIClientDynamic, k8sProcessingParameters.ScenarioNamespace, k8sProcessingParameters.ScenarioName)
+					}, k8sProcessingParameters.ScenarioNamespace, k8sProcessingParameters.ScenarioName, s3PkgPath.UUID)
 				}()
 				// Set final status in cascaderuns CR
 				wg.Add(1)
 				go func() {
 					defer wg.Done()
-					err := k8sClient.SetCascadeRunFinalStatus(k8sAPIClientDynamic, k8sProcessingParameters.ScenarioNamespace, k8sProcessingParameters.ScenarioName+"-"+s3PkgPath.UUID[0:5], false, "")
-					if err != nil {
-						// random sleep min-max seconds
-						min := 5
-						max := 20
-						randomTime := r.Intn(max-min) + min
-						zapLogger.Error("Error while change CR status. Retrying....", zap.Error(err), zap.String("Namespace", k8sProcessingParameters.ScenarioNamespace), zap.String("Name", k8sProcessingParameters.ScenarioName+"-"+s3PkgPath.UUID[0:5]), zap.String("TransferUUID", s3PkgPath.UUID))
-						time.Sleep(time.Second * time.Duration(randomTime))
-						zapLogger.Info("Retry change CR status", zap.String("Namespace", k8sProcessingParameters.ScenarioNamespace), zap.String("Name", k8sProcessingParameters.ScenarioName+"-"+s3PkgPath.UUID[0:5]), zap.String("TransferUUID", s3PkgPath.UUID))
-						err := k8sClient.SetCascadeRunFinalStatus(k8sAPIClientDynamic, k8sProcessingParameters.ScenarioNamespace, k8sProcessingParameters.ScenarioName+"-"+s3PkgPath.UUID[0:5], true, "")
-						if err != nil {
-							zapLogger.Error("Error while second attempt to change CR status.", zap.Error(err), zap.String("Namespace", k8sProcessingParameters.ScenarioNamespace), zap.String("Name", k8sProcessingParameters.ScenarioName+"-"+s3PkgPath.UUID[0:5]), zap.String("TransferUUID", s3PkgPath.UUID))
-						}
-					}
+					retryWithLoggingNoReturn(func() error {
+						return k8sClient.SetCascadeRunFinalStatus(k8sAPIClientDynamic, k8sProcessingParameters.ScenarioNamespace, k8sProcessingParameters.ScenarioName+"-"+s3PkgPath.UUID[0:5], false, "")
+					}, k8sProcessingParameters.ScenarioNamespace, k8sProcessingParameters.ScenarioName+"-"+s3PkgPath.UUID[0:5], s3PkgPath.UUID)
 				}()
 				promexporter.JobDuration.WithLabelValues(k8sProcessingParameters.ScenarioName, jobConfig.ModuleName, k8sProcessingParameters.Ob, k8sProcessingParameters.SName, "fail").Observe(time.Since(start_time_job).Seconds())
 				promexporter.TotalFailedScenario.WithLabelValues(k8sProcessingParameters.ScenarioName, k8sProcessingParameters.Ob, k8sProcessingParameters.SName).Inc()
@@ -234,40 +193,18 @@ func ImageProcessing(cascadeScenatioConfig []scenarioconfig.CascadeScenarios, k8
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		err := k8sClient.SetSuccessRemoveActiveStatus(k8sAPIClientDynamic, k8sProcessingParameters.ScenarioNamespace, k8sProcessingParameters.ScenarioName)
-		if err != nil {
-			// random sleep min-max seconds
-			min := 5
-			max := 20
-			randomTime := r.Intn(max-min) + min
-			zapLogger.Error("Error while change CR status. Retrying....", zap.Error(err), zap.String("Namespace", k8sProcessingParameters.ScenarioNamespace), zap.String("Name", k8sProcessingParameters.ScenarioName), zap.String("TransferUUID", s3PkgPath.UUID))
-			time.Sleep(time.Second * time.Duration(randomTime))
-			zapLogger.Info("Retry change CR status", zap.String("Namespace", k8sProcessingParameters.ScenarioNamespace), zap.String("Name", k8sProcessingParameters.ScenarioName), zap.String("TransferUUID", s3PkgPath.UUID))
-			err := k8sClient.SetActiveCRDStatus(k8sAPIClientDynamic, k8sProcessingParameters.ScenarioNamespace, k8sProcessingParameters.ScenarioName)
-			if err != nil {
-				zapLogger.Error("Error while second attempt to change CR status.", zap.Error(err), zap.String("Namespace", k8sProcessingParameters.ScenarioNamespace), zap.String("Name", k8sProcessingParameters.ScenarioName), zap.String("TransferUUID", s3PkgPath.UUID))
-			}
-		}
+		retryWithLoggingNoReturn(func() error {
+			return k8sClient.SetSuccessRemoveActiveStatus(k8sAPIClientDynamic, k8sProcessingParameters.ScenarioNamespace, k8sProcessingParameters.ScenarioName)
+		}, k8sProcessingParameters.ScenarioNamespace, k8sProcessingParameters.ScenarioName, s3PkgPath.UUID)
 	}()
 	// Set final status in cascaderuns CR
 	wg.Add(1)
 	go func() {
 		resultAddress := s3PkgPath.OutMinioAddress + k8sProcessingParameters.ScenarioName + "/" + s3PkgPath.UUID + "/" + s3PkgPath.UUID + "-final.zip"
 		defer wg.Done()
-		err := k8sClient.SetCascadeRunFinalStatus(k8sAPIClientDynamic, k8sProcessingParameters.ScenarioNamespace, k8sProcessingParameters.ScenarioName+"-"+s3PkgPath.UUID[0:5], true, resultAddress)
-		if err != nil {
-			// random sleep min-max seconds
-			min := 5
-			max := 20
-			randomTime := r.Intn(max-min) + min
-			zapLogger.Error("Error while change CR status. Retrying....", zap.Error(err), zap.String("Namespace", k8sProcessingParameters.ScenarioNamespace), zap.String("Name", k8sProcessingParameters.ScenarioName+"-"+s3PkgPath.UUID[0:5]), zap.String("TransferUUID", s3PkgPath.UUID))
-			time.Sleep(time.Second * time.Duration(randomTime))
-			zapLogger.Info("Retry change CR status", zap.String("Namespace", k8sProcessingParameters.ScenarioNamespace), zap.String("Name", k8sProcessingParameters.ScenarioName+"-"+s3PkgPath.UUID[0:5]), zap.String("TransferUUID", s3PkgPath.UUID))
-			err := k8sClient.SetCascadeRunFinalStatus(k8sAPIClientDynamic, k8sProcessingParameters.ScenarioNamespace, k8sProcessingParameters.ScenarioName+"-"+s3PkgPath.UUID[0:5], true, resultAddress)
-			if err != nil {
-				zapLogger.Error("Error while second attempt to change CR status.", zap.Error(err), zap.String("Namespace", k8sProcessingParameters.ScenarioNamespace), zap.String("Name", k8sProcessingParameters.ScenarioName+"-"+s3PkgPath.UUID[0:5]), zap.String("TransferUUID", s3PkgPath.UUID))
-			}
-		}
+		retryWithLoggingNoReturn(func() error {
+			return k8sClient.SetCascadeRunFinalStatus(k8sAPIClientDynamic, k8sProcessingParameters.ScenarioNamespace, k8sProcessingParameters.ScenarioName+"-"+s3PkgPath.UUID[0:5], true, resultAddress)
+		}, k8sProcessingParameters.ScenarioNamespace, k8sProcessingParameters.ScenarioName+"-"+s3PkgPath.UUID[0:5], s3PkgPath.UUID)
 	}()
 	// Measure and export scenario execution time
 	promexporter.ScenarioDuration.WithLabelValues(k8sProcessingParameters.ScenarioName, k8sProcessingParameters.Ob, k8sProcessingParameters.SName).Observe(time.Since(start_time).Seconds())

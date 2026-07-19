@@ -22,6 +22,25 @@ import (
 	clientcmd "k8s.io/client-go/tools/clientcmd"
 )
 
+// loadKubeConfig loads Kubernetes configuration from in-cluster config or kubeconfig file.
+// This is a shared helper function to avoid code duplication.
+func loadKubeConfig() *rest.Config {
+	config, err := rest.InClusterConfig()
+	if err != nil {
+		// fallback to kubeconfig
+		var kubeconfig string
+		if envvar := os.Getenv("KUBECONFIG"); len(envvar) > 0 {
+			kubeconfig = envvar
+		}
+		config, err = clientcmd.BuildConfigFromFlags("", kubeconfig)
+		if err != nil {
+			logger.Error("The kubeconfig cannot be loaded", zap.String("err", err.Error()))
+			os.Exit(1)
+		}
+	}
+	return config
+}
+
 type JobStatus int
 
 const (
@@ -50,20 +69,7 @@ type S3TransferPath struct {
 }
 
 func ConnectToK8s() *kubernetes.Clientset {
-	var kubeconfig string
-
-	config, err := rest.InClusterConfig()
-	if err != nil {
-		// fallback to kubeconfigkubeconfig := filepath.Join("~", ".kube", "config")
-		if envvar := os.Getenv("KUBECONFIG"); len(envvar) > 0 {
-			kubeconfig = envvar
-		}
-		config, err = clientcmd.BuildConfigFromFlags("", kubeconfig)
-		if err != nil {
-			logger.Error("The kubeconfig cannot be loaded", zap.String("err", err.Error()))
-			os.Exit(1)
-		}
-	}
+	config := loadKubeConfig()
 
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
@@ -75,20 +81,7 @@ func ConnectToK8s() *kubernetes.Clientset {
 }
 
 func ConnectTOK8sDinamic() dynamic.Interface {
-	var kubeconfig string
-
-	config, err := rest.InClusterConfig()
-	if err != nil {
-		// fallback to kubeconfigkubeconfig := filepath.Join("~", ".kube", "config")
-		if envvar := os.Getenv("KUBECONFIG"); len(envvar) > 0 {
-			kubeconfig = envvar
-		}
-		config, err = clientcmd.BuildConfigFromFlags("", kubeconfig)
-		if err != nil {
-			logger.Error("The kubeconfig cannot be loaded", zap.String("err", err.Error()))
-			os.Exit(1)
-		}
-	}
+	config := loadKubeConfig()
 
 	dynClient, err := dynamic.NewForConfig(config)
 	if err != nil {
