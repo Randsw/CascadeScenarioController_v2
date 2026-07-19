@@ -17,39 +17,6 @@ import (
 	"go.uber.org/zap"
 )
 
-type Payload struct {
-	PId           int    `json:"pId"`
-	OName         string `json:"oName"`
-	SName         string `json:"sName"`
-	ITId          int    `json:"itId"`
-	ITUid         string `json:"iitUid"`
-	IncomingCount int    `json:"incomingCount"`
-	IDate         string `json:"idate"`
-	UserId        int    `json:"userId"`
-	Path          string `json:"path"`
-	Crc32         string `json:"crc32"`
-}
-
-type PayloadOut struct {
-	UsId      int    `json:"usId"`
-	ITUid     string `json:"iitUid"` // This used as uid
-	FCount    int    `json:"fCount"`
-	IFCount   int    `json:"iFCount"`
-	OPath     string `json:"oPath"`
-	OTId      int    `json:"oTId"`
-	IAOut     bool   `json:"iAOut"`
-	OName     string `json:"oName"`
-	IDate     string `json:"iDate"`
-	OTUid     string `json:"oTUid"`
-	Crc32     string `json:"crc32"`
-	ICE       bool   `json:"iCE"`
-	PId       int    `json:"pId"`
-	ITId      int    `json:"iTId"`
-	ODateTime string `json:"oDateTime"`
-	IPath     string `json:"iPath"`
-	SName     string `json:"sName"`
-	IDateTime string `json:"iDateTime"`
-}
 
 var GlobalChannel chan map[string]string = make(chan map[string]string)
 

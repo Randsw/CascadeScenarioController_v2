@@ -129,12 +129,6 @@ func LaunchK8sJob(clientset *kubernetes.Clientset, namespace string, config *sce
 		},
 	},
 	})
-	podEnv = append(podEnv, v1.EnvVar{Name: "NAMESPACE", ValueFrom: &v1.EnvVarSource{
-		FieldRef: &v1.ObjectFieldSelector{
-			FieldPath: "metadata.namespace",
-		},
-	},
-	})
 	podEnv = append(podEnv, v1.EnvVar{Name: "SCENARIONAME", Value: scenarioName})
 
 	JobTemplate.Spec.Containers[0].Env = podEnv
@@ -401,15 +395,13 @@ func DeleteFinalizerCRD(clientDynamic dynamic.Interface, namespace string, name 
 	if err != nil {
 		return err
 	}
-	f := []string{}
-	index := 0
+	var f []string
 	for i := 0; i < len(structured.Finalizers); i++ {
 		if structured.Finalizers[i] == finalizer {
 			logger.Info("Found desired finalizer", zap.String("Finalizer", structured.Finalizers[i]))
 			continue
 		}
-		f[index] = structured.Finalizers[i]
-		index++
+		f = append(f, structured.Finalizers[i])
 	}
 	structured.Finalizers = f
 	logger.Info("Delete finalizer in CRD", zap.String("Namespace", namespace), zap.String("Name", name))

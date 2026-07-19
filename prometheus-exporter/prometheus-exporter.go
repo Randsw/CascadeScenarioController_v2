@@ -91,7 +91,7 @@ func PrometheusMiddleware(next http.Handler) http.Handler {
 
 		statusCode := rw.statusCode
 
-		responseStatus.WithLabelValues(strconv.Itoa(statusCode)).Inc()
+		responseStatus.WithLabelValues(strconv.Itoa(statusCode), path).Inc()
 		totalRequests.WithLabelValues(path).Inc()
 
 		timer.ObserveDuration()

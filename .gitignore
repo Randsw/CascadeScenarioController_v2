@@ -25,3 +25,11 @@ testbin/*
 
 .vscode
 .pytest_cache
+
+
+.git/
+bin/
+vendor/
+api/v1alpha1/zz_generated.deepcopy.go
+.rooignore
+*PLAN.md
