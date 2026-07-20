@@ -64,7 +64,9 @@ func TestNewResponseWriter_DefaultStatusCode(t *testing.T) {
 	rw := NewResponseWriter(rr)
 
 	// Write without calling WriteHeader should default to 200
-	rw.Write([]byte("test"))
+	if _, err := rw.Write([]byte("test")); err != nil {
+		t.Fatalf("Write failed: %v", err)
+	}
 
 	if rw.statusCode != http.StatusOK {
 		t.Errorf("Expected status 200, got %d", rw.statusCode)
@@ -76,7 +78,9 @@ func TestPrometheusMiddleware_Passthrough(t *testing.T) {
 	router := mux.NewRouter()
 	router.HandleFunc("/test-path", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"status": "ok"}`))
+		if _, err := w.Write([]byte(`{"status": "ok"}`)); err != nil {
+			t.Errorf("Write failed: %v", err)
+		}
 	}).Methods("GET")
 
 	// Wrap the router with middleware
@@ -117,7 +121,9 @@ func TestPrometheusMiddleware_BadRequest(t *testing.T) {
 	router := mux.NewRouter()
 	router.HandleFunc("/submit", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("bad request"))
+		if _, err := w.Write([]byte("bad request")); err != nil {
+			t.Errorf("Write failed: %v", err)
+		}
 	}).Methods("POST")
 
 	router.Use(PrometheusMiddleware)
