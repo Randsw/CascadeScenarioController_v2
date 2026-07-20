@@ -1,3 +1,16 @@
+## [1.8.0](https://github.com/Randsw/CascadeScenarioController_v2/compare/1.7.4...1.8.0) (2026-07-20)
+
+
+### 🚀 Features
+
+* Code and Test improve ([1a4a4ac](https://github.com/Randsw/CascadeScenarioController_v2/commit/1a4a4acd1ad8dfb8d475893d14c87ed1b01d2851))
+* Fix tests issues ([918687c](https://github.com/Randsw/CascadeScenarioController_v2/commit/918687c12f26d5b15b96ef74b4fa73bf08b6ea26))
+
+
+### Other
+
+* **deps:** bump github.com/prometheus/client_golang ([eb3c380](https://github.com/Randsw/CascadeScenarioController_v2/commit/eb3c380bb190825dbdafc26238265daec0c8314d))
+
 ## [1.7.4](https://github.com/Randsw/CascadeScenarioController_v2/compare/1.7.3...1.7.4) (2026-07-19)
 
 
