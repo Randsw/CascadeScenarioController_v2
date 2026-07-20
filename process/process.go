@@ -16,7 +16,35 @@ import (
 	kubernetes "k8s.io/client-go/kubernetes"
 )
 
+// CurrProcess tracks the number of currently running processes.
+// It is used by ImageProcessing for atomic increment/decrement.
+// For external consumers, use ProcessManager which wraps this variable.
 var CurrProcess int64
+
+// ProcessManager provides a clean API for tracking running processes.
+// It wraps the package-level CurrProcess variable, enabling dependency
+// injection while maintaining backward compatibility.
+type ProcessManager struct{}
+
+// NewProcessManager creates a new ProcessManager.
+func NewProcessManager() *ProcessManager {
+	return &ProcessManager{}
+}
+
+// Increment atomically increments the running process count.
+func (pm *ProcessManager) Increment() {
+	atomic.AddInt64(&CurrProcess, 1)
+}
+
+// Decrement atomically decrements the running process count.
+func (pm *ProcessManager) Decrement() {
+	atomic.AddInt64(&CurrProcess, -1)
+}
+
+// Load returns the current number of running processes.
+func (pm *ProcessManager) Load() int64 {
+	return atomic.LoadInt64(&CurrProcess)
+}
 
 const (
 	notStarted k8sClient.JobStatus = iota
@@ -31,6 +59,9 @@ func retryWithLoggingNoReturn(fn func() error, namespace, name, transferUUID str
 	_ = DoWithRetryDefault(fn)
 }
 
+// ImageProcessing orchestrates the execution of a cascade scenario by launching
+// Kubernetes Jobs for each module in sequence and monitoring their status.
+// The GlobalChannel is used to receive status updates from running modules.
 func ImageProcessing(cascadeScenatioConfig []scenarioconfig.CascadeScenarios, k8sAPIClientset *kubernetes.Clientset, k8sAPIClientDynamic dynamic.Interface,
 	k8sProcessingParameters k8sClient.K8sScenarioConfig, GlobalChannel chan map[string]string) {
 	stop := make(chan bool)
@@ -83,7 +114,9 @@ func ImageProcessing(cascadeScenatioConfig []scenarioconfig.CascadeScenarios, k8
 			}, k8sProcessingParameters.ScenarioNamespace, k8sProcessingParameters.ScenarioName, s3PkgPath.UUID)
 		}
 	}()
-	// Increment process count
+	// Increment process count using the global ProcessManager reference
+	// Note: This is accessed via the package-level CurrProcess for backward compatibility
+	// during the transition. The main package's ProcessManager wraps this.
 	zapLogger.Info("Current Processes count", zap.Int64("Running Processes", CurrProcess), zap.String("Namespace", k8sProcessingParameters.ScenarioNamespace), zap.String("Name", k8sProcessingParameters.ScenarioName))
 	atomic.AddInt64(&CurrProcess, 1)
 	for i, jobConfig := range cascadeScenatioConfig {
