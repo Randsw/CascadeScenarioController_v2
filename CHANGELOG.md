@@ -1,3 +1,30 @@
+## [1.9.0](https://github.com/Randsw/CascadeScenarioController_v2/compare/1.8.0...1.9.0) (2026-09-30)
+
+
+### 📔 Docs
+
+* Improve documentation ([d9d9066](https://github.com/Randsw/CascadeScenarioController_v2/commit/d9d9066fafe88881ffca5bade3e3ff28a0576cad))
+
+
+### 🚀 Features
+
+* **docker:** harden Dockerfile with pinned bases, CA certs and multi-arch builds ([e1957cd](https://github.com/Randsw/CascadeScenarioController_v2/commit/e1957cd461bbe23024e8c109f16f9e4f936eda9f))
+
+
+### Other
+
+* **deps:** bump docker/login-action from 4 to 4.5.2 ([56fb77c](https://github.com/Randsw/CascadeScenarioController_v2/commit/56fb77c1fc38abbe061a0a328d7f0fe506a82b6e))
+* **deps:** bump docker/login-action from 4.5.2 to 4.6.0 ([e08e0a9](https://github.com/Randsw/CascadeScenarioController_v2/commit/e08e0a950f6431e88374e610b2e9128f61243694))
+* **deps:** bump github.com/prometheus/client_golang ([8060787](https://github.com/Randsw/CascadeScenarioController_v2/commit/806078734a7043dc5230b43a73b2d88137f7f55f))
+* **deps:** bump golang from 1.26 to 1.27 ([184aa52](https://github.com/Randsw/CascadeScenarioController_v2/commit/184aa52bc73a2d7718c41ea2461ff0c78ead0c42))
+* **deps:** bump golang.org/x/time from 0.14.0 to 0.15.0 ([36dcca3](https://github.com/Randsw/CascadeScenarioController_v2/commit/36dcca33584f018fc69029e5b92e705564e2ab6e))
+* **deps:** bump golang.org/x/time from 0.15.0 to 0.16.0 ([5d04b58](https://github.com/Randsw/CascadeScenarioController_v2/commit/5d04b58b18ed7eb490862d99dbe7e10059754b26))
+* **deps:** bump k8s.io/api from 0.36.3 to 0.36.4 ([d4afc23](https://github.com/Randsw/CascadeScenarioController_v2/commit/d4afc2368883b3fe34fbfdafb4b49c765b250092))
+* **deps:** bump k8s.io/client-go from 0.36.2 to 0.36.3 ([3439fc4](https://github.com/Randsw/CascadeScenarioController_v2/commit/3439fc4808e792707b2af2adcfd8897d08551bda))
+* **deps:** bump k8s.io/client-go from 0.36.3 to 0.36.4 ([6dcabf6](https://github.com/Randsw/CascadeScenarioController_v2/commit/6dcabf6a0184e33822bd073be0a411f6dcccd2a1))
+* **deps:** bump k8s.io/client-go from 0.36.4 to 0.37.0 ([f84fdd6](https://github.com/Randsw/CascadeScenarioController_v2/commit/f84fdd69c1b647e2031f97969c7fd18f23610530))
+* **deps:** bump k8s.io/client-go from 0.37.0 to 0.37.1 ([6206222](https://github.com/Randsw/CascadeScenarioController_v2/commit/6206222695b6183d7727803b627d6dfe889896ab))
+
 ## [1.8.0](https://github.com/Randsw/CascadeScenarioController_v2/compare/1.7.4...1.8.0) (2026-07-20)
 
 
