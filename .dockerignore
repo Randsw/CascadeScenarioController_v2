@@ -1,2 +1,52 @@
+# Version control and repository tooling
+.git
+.gitignore
+.github
+.rooignore
+
+# Release, lint and CI configuration (not needed to compile the binary)
+.releaserc.yaml
+.pre-commit-config.yaml
+_config.yml
+CHANGELOG.md
+
+# Documentation
+*.md
+
+# Tests and fixtures (not compiled by `make build`).
+# The `**/` prefix is required: a bare `*_test.go` only matches files in the
+# repository root, not in nested package directories.
+**/*_test.go
+cascadescenario/test/
+
+# Locally produced artifacts
+cascadescenariocontroller_auto
+bin/
+vendor/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Editors and operating system metadata
 .vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Python tooling
 .pytest_cache
+__pycache__/
+
+# Docker build definitions themselves
+Dockerfile
+.dockerignore
+docker-compose*.yml
+
+# Local plan files
+*PLAN.md

@@ -328,22 +328,45 @@ make build
 
 Build flags include:
 - `CGO_ENABLED=0` — static binary for Alpine/distroless
-- `GOOS=linux GOARCH=amd64` — Linux AMD64 target
+- `GOOS` / `GOARCH` — target platform; both default to `linux` / `amd64` and are overridden by the Dockerfile during image builds
 - LD flags inject `tag`, `hash`, `date` into the binary at [`handlers/handlers.go:21-23`](handlers/handlers.go:21-23)
+
+The `VERSION`, `COMMIT` and `DATE` values used for the LD flags resolve in this order:
+
+1. the environment, which includes Docker build-args;
+2. git metadata, when a repository is available (the usual case for a local `make build`);
+3. a static fallback (`dev`, `unknown`, or the current UTC timestamp).
+
+Git metadata is only used for local builds. The container image build excludes [`.git`](.gitignore) from its context for security and cache efficiency, so the release workflow passes the values in as build-args instead.
 
 ### Docker
 
 ```bash
-# Build Docker image
-docker build -t ghcr.io/randsw/cascadescenariocontroller:latest .
+# Build a multi-architecture image for both supported platforms
+docker buildx build \
+  --platform linux/amd64,linux/arm64 \
+  --build-arg VERSION="$(git describe --tags --abbrev=0 --always)" \
+  --build-arg COMMIT="$(git rev-parse HEAD)" \
+  --build-arg DATE="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+  -t ghcr.io/randsw/cascadescenariocontroller-auto:latest \
+  --push .
 
-# Push to registry
-docker push ghcr.io/randsw/cascadescenariocontroller:latest
+# For a quick single-platform local build the metadata arguments are optional
+docker buildx build --platform linux/amd64 -t cascadescenariocontroller-auto:local --load .
 ```
 
 The [`Dockerfile`](Dockerfile) uses a multi-stage build:
-1. **Builder stage**: `golang:1.26` — compiles the binary via `make build`
-2. **Runtime stage**: `gcr.io/distroless/static:nonroot` — minimal, secure runtime
+1. **Builder stage**: `golang:1.26-bookworm`, pinned by digest — runs on `$BUILDPLATFORM` and cross-compiles for `$TARGETOS`/`$TARGETARCH` via `make build`, with BuildKit cache mounts for the module and build caches
+2. **Runtime stage**: `gcr.io/distroless/static:nonroot`, pinned by digest — minimal, secure, non-root runtime running as UID/GID `65532`
+
+The runtime image is intentionally hardened:
+
+- **Digest-pinned base images** — reproducible builds that cannot be altered by an upstream tag move.
+- **CA certificates included** — required to reach the Kubernetes API server and any HTTPS webhook endpoint; `distroless/static` does not ship them, so the bundle is copied from the builder stage.
+- **OCI labels** — `org.opencontainers.image.*` metadata (source, version, revision, created, licenses) is applied for provenance and registry UIs.
+- **CA certificates and binary copied with `COPY --link`** — better layer caching and correct multi-platform results.
+- **`EXPOSE 8080`** — documents the HTTP port used by `/healthz`, `/ready`, `/metrics` and `/run`.
+- **Non-root execution** — the container runs as `65532:65532`, matching [`USER 65532:65532`](Dockerfile:78).
 
 ### Kubernetes Custom Resources
 
