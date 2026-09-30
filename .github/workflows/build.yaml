@@ -24,6 +24,14 @@ jobs:
             type=ref,event=pr
             type=ref,event=tag
             type=semver,pattern={{version}}
+      - name: Collect build metadata
+        id: build_meta
+        run: |
+          echo "date=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+          echo "commit=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+      - name: Set up QEMU
+        id: qemu
+        uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@v4
@@ -41,6 +49,17 @@ jobs:
           # Note: tags has to be all lower-case
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          # The controller is deployed on both amd64 and arm64 nodes.
+          platforms: linux/amd64,linux/arm64
+          # Build metadata is passed in as build-args because .git is excluded
+          # from the build context, so the Makefile cannot derive it itself.
+          build-args: |
+            VERSION=${{ steps.meta.outputs.version }}
+            COMMIT=${{ steps.build_meta.outputs.commit }}
+            DATE=${{ steps.build_meta.outputs.date }}
+          # Persistent layer caching keeps repeated tag builds fast.
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           push: true
     Release:
         needs: Deploy
