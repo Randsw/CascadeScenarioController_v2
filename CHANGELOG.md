@@ -1,3 +1,21 @@
+## [1.9.1](https://github.com/Randsw/CascadeScenarioController_v2/compare/1.9.0...1.9.1) (2026-10-28)
+
+
+### 🦊 CI/CD
+
+* pin base images with version tags instead of digests ([164309f](https://github.com/Randsw/CascadeScenarioController_v2/commit/164309f73b42373ef20fc20c5c55c5925858460b))
+
+
+### Other
+
+* **deps:** bump distroless/static from `5167571` to `d620678` ([e5b1f7a](https://github.com/Randsw/CascadeScenarioController_v2/commit/e5b1f7aa0acd7dbd9a660feed1b381c89e682196))
+* **deps:** bump distroless/static from `e2e927e` to `5167571` ([278e5f7](https://github.com/Randsw/CascadeScenarioController_v2/commit/278e5f7e1c62107067d6ebf320109c92a03eaff3))
+* **deps:** bump docker/login-action from 4.6.0 to 4.7.0 ([b5e7c51](https://github.com/Randsw/CascadeScenarioController_v2/commit/b5e7c513b7b24475abe9a0cfb171512f0908e3e7))
+* **deps:** bump docker/setup-qemu-action from 3 to 4 ([d5a853b](https://github.com/Randsw/CascadeScenarioController_v2/commit/d5a853b10a3e5a89d769710a21353bd7e8330e54))
+* **deps:** bump github.com/prometheus/client_golang ([c694d0a](https://github.com/Randsw/CascadeScenarioController_v2/commit/c694d0aab24518786ae50b4a4e174e255b298715))
+* **deps:** bump golang from `69a7b97` to `5cf287a` ([615b73e](https://github.com/Randsw/CascadeScenarioController_v2/commit/615b73e519a781ec0008859a5f330b35d92d77f3))
+* **deps:** bump golang from 1.26-bookworm to 1.27-bookworm ([535f283](https://github.com/Randsw/CascadeScenarioController_v2/commit/535f28327e2c222e412874de57ce5157d1ca7c57))
+
 ## [1.9.0](https://github.com/Randsw/CascadeScenarioController_v2/compare/1.8.0...1.9.0) (2026-09-30)
 
 
