@@ -8,7 +8,7 @@
 # requested target platform ($TARGETOS/$TARGETARCH), so multi-architecture
 # builds do not require emulating the Go toolchain.
 # ---------------------------------------------------------------------------
-FROM --platform=$BUILDPLATFORM golang:1.27-bookworm@sha256:5cf287a799e6b94384bad13d16b14904c531f51ba65792237e122ce42b392f61 AS builder
+FROM --platform=$BUILDPLATFORM golang:1.27.2-bookworm AS builder
 
 # Target platform, injected automatically by BuildKit.
 ARG TARGETOS
@@ -48,7 +48,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 #
 # Minimal, non-root, static distroless image.
 # ---------------------------------------------------------------------------
-FROM gcr.io/distroless/static:nonroot@sha256:d62067879de890a1def9da0e7766b7d20810a5e5555cef8506b752437d7a3e88 AS runtime
+FROM gcr.io/distroless/static-debian12:nonroot AS runtime
 
 # OCI image metadata. The build workflow supplies the real values; the
 # defaults keep a local `docker build` useful.
