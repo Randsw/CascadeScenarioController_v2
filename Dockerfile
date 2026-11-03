@@ -8,7 +8,7 @@
 # requested target platform ($TARGETOS/$TARGETARCH), so multi-architecture
 # builds do not require emulating the Go toolchain.
 # ---------------------------------------------------------------------------
-FROM --platform=$BUILDPLATFORM golang:1.27.2-bookworm AS builder
+FROM --platform=$BUILDPLATFORM golang:1.27.3-bookworm AS builder
 
 # Target platform, injected automatically by BuildKit.
 ARG TARGETOS
